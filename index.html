@@ -1,0 +1,2634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Project Excavation. Free LEGO Set Sorting Tracker</title>
+<meta name="description" content="Project Excavation is a free LEGO set sorting tracker from Build Beyond Belief. Load a parts list, tick off every brick as you dig it out of the pile — built for rebuilders and live streams." />
+<meta name="author" content="Build Beyond Belief" />
+<style>
+  :root {
+    --bg: #0e1424;
+    --bg-2: #131c33;
+    --panel: #16203a;
+    --panel-2: #1d294a;
+    --line: #2b3a5e;
+    --text: #eef3ff;
+    --muted: #9aa9c7;
+    --brand: #ffcf2b;
+    --brand-2: #ff5a3c;
+    --green: #38d39f;
+    --green-deep: #14a877;
+    --blue: #4aa3ff;
+    --red: #e8443b;
+    --radius: 16px;
+    --shadow: 0 12px 40px rgba(0,0,0,.45);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background:
+      radial-gradient(1200px 700px at 85% -10%, rgba(74,163,255,.18), transparent 60%),
+      radial-gradient(1000px 600px at -10% 110%, rgba(255,90,60,.14), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 22px 22px 80px;
+  }
+
+  /* ---------- Build Beyond Belief strip ---------- */
+  .bbb-strip {
+    background: linear-gradient(90deg, rgba(99,102,241,.12), rgba(6,182,212,.08));
+    border-bottom: 1px solid var(--line);
+    padding: 10px 22px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .bbb-strip a { color: var(--blue); font-weight: 700; text-decoration: none; }
+  .bbb-strip a:hover { text-decoration: underline; }
+  .bbb-strip strong { color: var(--text); font-weight: 700; }
+
+  /* ---------- Welcome ---------- */
+  .welcome {
+    padding: 22px 24px;
+    margin-bottom: 18px;
+    line-height: 1.55;
+  }
+  .welcome h2 { margin: 0 0 10px; font-size: 20px; }
+  .welcome p { margin: 0 0 14px; color: var(--muted); font-size: 14.5px; max-width: 720px; }
+  .welcome-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .welcome-step {
+    background: #0e1730;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .welcome-step b { display: block; color: var(--text); font-size: 14px; margin-bottom: 4px; }
+  .welcome-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
+  .setup-advanced {
+    margin-top: 14px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  .setup-advanced summary {
+    cursor: pointer;
+    color: var(--blue);
+    font-weight: 700;
+    font-size: 13.5px;
+    margin-bottom: 12px;
+  }
+
+  /* ---------- Header ---------- */
+  header.topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-mark {
+    width: 54px; height: 54px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 4px;
+    padding: 9px;
+    box-shadow: var(--shadow);
+  }
+  .logo-mark span {
+    background: rgba(255,255,255,.9);
+    border-radius: 50%;
+    box-shadow: inset 0 -2px 3px rgba(0,0,0,.25);
+  }
+  .logo h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: .5px;
+    line-height: 1.05;
+  }
+  .logo h1 small {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin-top: 3px;
+  }
+  .tagline {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 360px;
+    text-align: right;
+  }
+
+  /* ---------- Panels ---------- */
+  .panel {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  /* ---------- Setup card ---------- */
+  .setup {
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .setup-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field .hint { font-size: 11.5px; color: var(--muted); font-weight: 500; letter-spacing: 0; text-transform: none; }
+  input[type="text"], input[type="password"], select {
+    background: #0d1426;
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 11px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(74,163,255,.2);
+  }
+  #setNumber { width: 220px; font-weight: 700; letter-spacing: .5px; }
+  #apiKey { width: 280px; }
+
+  .btn {
+    border: none;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 12px 20px;
+    border-radius: 11px;
+    color: #11161f;
+    background: linear-gradient(135deg, var(--brand), #ffb800);
+    box-shadow: 0 6px 18px rgba(255,184,0,.28);
+    transition: transform .08s, filter .15s;
+    letter-spacing: .3px;
+  }
+  .btn:hover { filter: brightness(1.05); }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--line);
+    box-shadow: none;
+  }
+  .btn.ghost:hover { border-color: var(--blue); color: var(--blue); }
+  .btn.danger.ghost:hover { border-color: var(--red); color: var(--red); }
+
+  .api-note {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .api-note a { color: var(--blue); text-decoration: none; }
+  .api-note a:hover { text-decoration: underline; }
+  .pill {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .pill.ok { background: rgba(56,211,159,.15); color: var(--green); }
+  .pill.off { background: rgba(154,169,199,.15); color: var(--muted); }
+
+  /* ---------- Status / errors ---------- */
+  .status {
+    margin-bottom: 18px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 14.5px;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.err { background: rgba(232,68,59,.12); border: 1px solid rgba(232,68,59,.4); color: #ffb4ae; }
+  .status.info { background: rgba(74,163,255,.12); border: 1px solid rgba(74,163,255,.35); color: #bfe0ff; }
+
+  /* ---------- Set header ---------- */
+  .set-head {
+    display: none;
+    padding: 0;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  .set-head.show { display: block; }
+  .set-head-inner { display: flex; gap: 20px; padding: 20px; align-items: center; flex-wrap: wrap; }
+  .set-img {
+    width: 168px; height: 130px;
+    border-radius: 12px;
+    background: #fff;
+    object-fit: contain;
+    padding: 8px;
+    flex-shrink: 0;
+  }
+  .set-meta { flex: 1; min-width: 240px; }
+  .set-meta h2 { margin: 0 0 6px; font-size: 24px; }
+  .set-meta .sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  .stat-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chip {
+    background: #0e1730;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+    min-width: 92px;
+  }
+  .chip .num { font-size: 22px; font-weight: 800; line-height: 1; }
+  .chip .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .chip.found .num { color: var(--green); }
+  .chip.remain .num { color: var(--brand); }
+
+  /* ---------- Progress ---------- */
+  .progress-wrap {
+    display: none;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+  }
+  .progress-wrap.show { display: block; }
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .progress-top .big { font-size: 18px; font-weight: 800; }
+  .progress-top .pct { font-size: 30px; font-weight: 900; color: var(--brand); }
+  .bar {
+    height: 18px;
+    background: #0c1430;
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .bar > div {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--green-deep), var(--green));
+    border-radius: 999px;
+    transition: width .35s ease;
+    box-shadow: 0 0 14px rgba(56,211,159,.5);
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    display: none;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .toolbar.show { display: flex; }
+  .toolbar input[type="text"] { width: 260px; }
+  .seg {
+    display: flex;
+    background: #0d1426;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    overflow: hidden;
+  }
+  .seg button {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 11px 16px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 13.5px;
+  }
+  .seg button.active { background: var(--blue); color: #fff; }
+  .toolbar .spacer { margin-left: auto; }
+  .count-readout { color: var(--muted); font-size: 13.5px; }
+  .value-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #0d1426;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    padding: 0 10px 0 12px;
+    height: 44px;
+  }
+  .value-group .value-label { font-size: 12.5px; font-weight: 700; color: var(--muted); margin-right: 4px; white-space: nowrap; }
+  .value-group .value-cur, .value-group .value-dash { color: var(--muted); font-weight: 700; }
+  .value-group input {
+    width: 58px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 700;
+    padding: 8px 2px;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .value-group input::-webkit-outer-spin-button,
+  .value-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .value-group input:focus { color: var(--brand); }
+  .price-link {
+    margin-left: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--blue);
+    text-decoration: none;
+    white-space: nowrap;
+    border-left: 1px solid var(--line);
+    padding-left: 10px;
+  }
+  .price-link:hover { text-decoration: underline; }
+
+  /* ---------- Parts grid ---------- */
+  /* ---------- Manual add-part ---------- */
+  .add-part {
+    display: none;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--blue);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .add-part.show { display: flex; }
+  .add-part-title { font-weight: 800; font-size: 14px; color: var(--blue); white-space: nowrap; }
+  .add-part input[type="text"] { flex: 1; min-width: 160px; }
+  .add-part #apColor { flex: 0 1 150px; min-width: 110px; }
+  .add-part #apImg { flex: 1 1 180px; }
+  .add-part #apQty { width: 70px; text-align: center; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    transition: transform .12s, border-color .15s, box-shadow .15s;
+  }
+  .card:hover { transform: translateY(-3px); border-color: #3a4d78; }
+  .card.done {
+    border-color: var(--green);
+    box-shadow: 0 0 0 1px var(--green), 0 10px 26px rgba(20,168,119,.25);
+  }
+  .card.done::after {
+    content: "✓ FOUND";
+    position: absolute;
+    top: 12px; right: 12px;
+    background: var(--green);
+    color: #06281d;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    padding: 4px 9px;
+    border-radius: 999px;
+  }
+  .card-top { display: flex; gap: 12px; align-items: center; }
+  .part-img {
+    width: 76px; height: 64px;
+    border-radius: 10px;
+    background: #fff;
+    object-fit: contain;
+    padding: 5px;
+    flex-shrink: 0;
+  }
+  .part-info { min-width: 0; flex: 1; }
+  .part-name {
+    font-weight: 700;
+    font-size: 14.5px;
+    line-height: 1.25;
+    margin-bottom: 5px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .part-num { font-size: 12px; color: var(--muted); }
+  .color-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+  .swatch {
+    width: 16px; height: 16px;
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,.25);
+    flex-shrink: 0;
+  }
+
+  /* counter */
+  .counter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+  }
+  .counter .qty {
+    flex: 1;
+    text-align: center;
+    font-weight: 900;
+    font-size: 17px;
+    letter-spacing: .5px;
+  }
+  .counter .qty .need { color: var(--muted); font-weight: 700; font-size: 14px; }
+  .step {
+    width: 40px; height: 40px;
+    border-radius: 11px;
+    border: 1px solid var(--line);
+    background: #0e1730;
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 800;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform .08s, background .15s, border-color .15s;
+  }
+  .step:hover { border-color: var(--blue); }
+  .step:active { transform: scale(.92); }
+  .step.plus { background: linear-gradient(135deg, var(--green-deep), var(--green)); border-color: transparent; color: #042c1f; }
+  .step:disabled { opacity: .35; cursor: not-allowed; }
+
+  .mark-btn {
+    width: 100%;
+    padding: 9px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #0e1730;
+    color: var(--muted);
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: .5px;
+    transition: all .15s;
+  }
+  .mark-btn:hover { border-color: var(--green); color: var(--green); }
+  .card.done .mark-btn { background: rgba(56,211,159,.12); border-color: var(--green); color: var(--green); }
+  .card.minifig { border-color: rgba(146,57,120,.55); }
+  .card.minifig::before {
+    content: "MINIFIG";
+    position: absolute;
+    top: 12px; left: 12px;
+    background: #923978;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    z-index: 1;
+  }
+  .card.minifig.done::after { top: 40px; }
+
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--muted);
+    padding: 50px 20px;
+    font-size: 15px;
+  }
+
+  /* ---------- Loading skeleton ---------- */
+  .spinner {
+    width: 22px; height: 22px;
+    border: 3px solid rgba(255,255,255,.2);
+    border-top-color: var(--brand);
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- Live hunt stats ---------- */
+  .stats-wrap { display: none; padding: 18px 20px; margin-bottom: 18px; }
+  .stats-wrap.show { display: block; }
+  .stats-head {
+    font-size: 13px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .stats-head .live-dot {
+    width: 9px; height: 9px; border-radius: 50%; background: var(--red);
+    box-shadow: 0 0 0 0 rgba(232,68,59,.6); animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(232,68,59,.55); }
+    70% { box-shadow: 0 0 0 8px rgba(232,68,59,0); }
+    100% { box-shadow: 0 0 0 0 rgba(232,68,59,0); }
+  }
+  .stat-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .tile {
+    background: #0e1730;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tile::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: var(--accent, var(--blue));
+  }
+  .tile .tile-ico { font-size: 18px; margin-bottom: 6px; }
+  .tile .tile-val {
+    font-size: 26px; font-weight: 900; line-height: 1; letter-spacing: .5px;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .tile .tile-val .unit { font-size: 13px; font-weight: 700; color: var(--muted); margin-left: 3px; }
+  .tile .tile-val small { font-size: 13px; font-weight: 700; color: var(--text); display:block; margin-top:4px; white-space: normal; }
+  .tile .tile-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 7px; }
+  .tile.t-time { --accent: var(--blue); }
+  .tile.t-pace { --accent: var(--brand); }
+  .tile.t-eta  { --accent: var(--green); }
+  .tile.t-best { --accent: var(--brand-2); }
+  .tile.t-pile { --accent: #b06bff; }
+
+  .color-bd-head {
+    font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px;
+  }
+  .cbar { margin-bottom: 11px; }
+  .cbar:last-child { margin-bottom: 0; }
+  .cbar-top {
+    display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 5px;
+  }
+  .cbar-top .swatch { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(255,255,255,.25); flex-shrink: 0; }
+  .cbar-top .cname { font-weight: 600; }
+  .cbar-top .cnums { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .cbar-top .cnums b { color: var(--text); }
+  .cbar-track { height: 9px; background: #0c1430; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .cbar-fill { height: 100%; width: 0%; border-radius: 999px; transition: width .35s ease; }
+  .cbar.done .cbar-fill { box-shadow: 0 0 10px currentColor; }
+  .cbar-more { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+
+  /* ---------- Sticky HUD ---------- */
+  .sticky-hud {
+    display: none;
+    position: sticky;
+    top: 8px;
+    z-index: 30;
+    margin-bottom: 16px;
+    background: linear-gradient(180deg, rgba(29,41,74,.97), rgba(22,32,58,.97));
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    overflow: hidden;
+  }
+  .sticky-hud.show { display: block; }
+  .hud-inner {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .hud-set {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #fff 0%, #e8ecf4 100%);
+    border-right: 1px solid var(--line);
+    padding: 12px 16px;
+    min-width: 172px;
+  }
+  .hud-set-img {
+    width: 156px;
+    height: 148px;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,.35));
+  }
+  .hud-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .hud-stats { padding: 10px 14px 8px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .hud-row {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .hud-headline {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-width: 140px;
+    flex: 1 1 160px;
+    padding-right: 8px;
+    border-right: 1px solid var(--line);
+  }
+  .hud-title {
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 1.15;
+    max-width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .hud-pct {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--brand);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .hud-cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    background: #0e1730;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+    min-width: 88px;
+    flex: 1 1 auto;
+  }
+  .hud-cell .hud-lbl {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .hud-cell .hud-val {
+    font-size: 22px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .hud-cell .hud-val small { font-size: 14px; font-weight: 700; color: var(--muted); }
+  .hud-cell.hud-found .hud-val { color: var(--green); }
+  .hud-cell.hud-remain .hud-val { color: var(--brand); }
+  .hud-cell.hud-value .hud-val { color: var(--blue); font-size: 18px; }
+  .hud-cell.hud-rate .hud-val { color: var(--green); font-size: 18px; }
+  .hud-cell.hud-eta .hud-val { font-size: 20px; }
+  .hud-drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 96px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,90,60,.55);
+    background: linear-gradient(180deg, rgba(255,90,60,.18), rgba(255,90,60,.06));
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform .08s, border-color .15s, background .15s;
+    flex-shrink: 0;
+  }
+  .hud-drop:hover { border-color: var(--brand-2); background: rgba(255,90,60,.22); }
+  .hud-drop:active { transform: scale(.94); }
+  .hud-drop.bump { animation: dropBump .35s ease; }
+  @keyframes dropBump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.08); border-color: var(--brand-2); }
+    100% { transform: scale(1); }
+  }
+  .hud-drop .drop-ico { font-size: 22px; line-height: 1; }
+  .hud-drop .drop-lbl {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--brand-2);
+  }
+  .hud-drop .drop-count {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--brand-2);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .hud-pause {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 88px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(74,163,255,.5);
+    background: linear-gradient(180deg, rgba(74,163,255,.2), rgba(74,163,255,.06));
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform .08s, border-color .15s, background .15s;
+    flex-shrink: 0;
+  }
+  .hud-pause:hover { border-color: var(--blue); background: rgba(74,163,255,.28); }
+  .hud-pause:active { transform: scale(.94); }
+  .hud-pause .pause-ico { font-size: 24px; line-height: 1; }
+  .hud-pause .pause-lbl {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--blue);
+  }
+  .hud-pause.is-paused {
+    border-color: var(--brand);
+    background: linear-gradient(180deg, rgba(255,207,43,.22), rgba(255,207,43,.06));
+  }
+  .hud-pause.is-paused .pause-lbl { color: var(--brand); }
+  .sticky-hud.is-paused .hud-cell:has(#hudTime) .hud-val { color: var(--brand); opacity: .85; }
+  .sticky-hud.is-paused .hud-cell:has(#hudTime) .hud-lbl::after {
+    content: " · paused";
+    color: var(--brand);
+    text-transform: lowercase;
+    letter-spacing: 0;
+  }
+  .hud-bar { height: 8px; background: #0c1430; }
+  .hud-bar > div {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--green-deep), var(--green));
+    transition: width .35s ease;
+    box-shadow: 0 0 10px rgba(56,211,159,.5);
+  }
+  @media (max-width: 720px) {
+    .hud-inner { flex-wrap: wrap; }
+    .hud-set {
+      width: 100%;
+      min-width: 0;
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+      padding: 12px;
+    }
+    .hud-set-img { width: 100%; max-width: 200px; height: 96px; margin: 0 auto; }
+    .hud-headline { border-right: none; border-bottom: 1px solid var(--line); padding-bottom: 8px; flex: 1 1 100%; }
+    .hud-pct { font-size: 30px; }
+    .hud-cell .hud-val { font-size: 20px; }
+  }
+
+  /* ---------- Found toast ---------- */
+  .found-toast {
+    position: fixed;
+    left: 50%; bottom: 28px;
+    transform: translateX(-50%) translateY(140%);
+    background: linear-gradient(135deg, var(--green-deep), var(--green));
+    color: #042c1f;
+    padding: 13px 22px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 15px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.5);
+    display: flex; align-items: center; gap: 11px;
+    z-index: 40;
+    opacity: 0;
+    transition: transform .35s cubic-bezier(.2,1.3,.4,1), opacity .35s;
+    pointer-events: none;
+    max-width: 90vw;
+  }
+  .found-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .found-toast .ft-swatch { width: 18px; height: 18px; border-radius: 5px; border: 1px solid rgba(0,0,0,.3); }
+  .found-toast .ft-sub { font-weight: 700; opacity: .8; font-size: 13px; }
+
+  /* ---------- Celebration ---------- */
+  #celebrate {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    display: none;
+    z-index: 50;
+  }
+  #celebrate.show { display: block; }
+  .confetti {
+    position: absolute;
+    width: 11px; height: 16px;
+    top: -20px;
+    border-radius: 2px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 1; }
+  }
+  .done-banner {
+    position: fixed;
+    left: 50%; top: 38%;
+    transform: translateX(-50%) scale(.6);
+    background: linear-gradient(135deg, var(--green-deep), var(--green));
+    color: #042c1f;
+    padding: 26px 44px;
+    border-radius: 20px;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    text-align: center;
+    opacity: 0;
+    transition: opacity .3s, transform .4s cubic-bezier(.2,1.4,.4,1);
+    z-index: 51;
+  }
+  .done-banner.show { opacity: 1; transform: translateX(-50%) scale(1); }
+  .done-banner small { display:block; font-size: 15px; font-weight:700; margin-top:6px; opacity:.85; }
+
+  footer.site-footer {
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 20px;
+  }
+  .footer-bbb {
+    background: linear-gradient(135deg, rgba(99,102,241,.1), rgba(6,182,212,.06));
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 22px;
+    line-height: 1.6;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .footer-bbb h3 { margin: 0 0 8px; font-size: 16px; color: var(--text); }
+  .footer-bbb a { color: var(--blue); font-weight: 700; text-decoration: none; }
+  .footer-bbb a:hover { text-decoration: underline; }
+  .footer-sister { font-size: 13px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .footer-legal {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  /* ---------- Import panel ---------- */
+  .import-panel { display: none; padding: 20px; margin-bottom: 18px; }
+  .import-panel.show { display: block; }
+  .import-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .import-head h3 { margin: 0; font-size: 19px; }
+  .import-close { padding: 6px 12px; font-size: 14px; }
+  .import-intro { color: var(--muted); font-size: 13.5px; margin: 0 0 16px; line-height: 1.5; }
+  .import-intro b, .import-help b { color: var(--text); }
+  .import-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .import-grid .field { width: 100%; }
+  #importSetName { width: 100%; }
+  .file-drop {
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    border: 2px dashed var(--line); border-radius: 11px;
+    padding: 14px; min-height: 50px; color: var(--muted); font-size: 13.5px;
+    cursor: pointer; transition: border-color .15s, color .15s, background .15s;
+  }
+  .file-drop:hover, .file-drop.drag { border-color: var(--blue); color: var(--blue); background: rgba(74,163,255,.06); }
+  textarea#importText {
+    width: 100%; resize: vertical; min-height: 120px;
+    background: #0d1426; border: 1px solid var(--line); color: var(--text);
+    border-radius: 11px; padding: 12px 14px; font-size: 13.5px;
+    font-family: "Consolas", "SF Mono", ui-monospace, monospace; line-height: 1.5; outline: none;
+  }
+  textarea#importText:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(74,163,255,.2); }
+  .import-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+  .import-msg { font-size: 13.5px; font-weight: 600; }
+  .import-msg.err { color: #ff8a80; }
+  .import-msg.ok { color: var(--green); }
+  .import-help { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .import-help summary { cursor: pointer; color: var(--blue); font-weight: 700; font-size: 13.5px; }
+  .import-help-body { color: var(--muted); font-size: 13px; line-height: 1.6; margin-top: 10px; }
+  .import-help-body ul { margin: 6px 0; padding-left: 18px; }
+  .import-help-body code {
+    background: #0d1426; border: 1px solid var(--line); border-radius: 5px;
+    padding: 1px 6px; font-size: 12px; color: var(--brand);
+  }
+
+  @media (max-width: 600px) {
+    .tagline { display: none; }
+    #setNumber, #apiKey, .toolbar input[type="text"] { width: 100%; }
+    .field { flex: 1; }
+    .import-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="bbb-strip">
+  A free tool from <a href="https://buildbeyondbelief.com" target="_blank" rel="noopener"><strong>Build Beyond Belief</strong></a>
+  — practical builds for people who like making useful things.
+</div>
+<div id="celebrate"></div>
+<div class="done-banner" id="doneBanner">🎉 Set Complete!<small id="doneSub"></small></div>
+<div class="found-toast" id="foundToast"></div>
+
+<div class="wrap">
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-mark"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <h1>Project Excavation <small>Free LEGO set sorting tracker</small></h1>
+    </div>
+    <div class="tagline">Dig every brick out of the pile. Track progress. Stream-friendly.</div>
+  </header>
+
+  <section class="panel welcome">
+    <h2>Rebuilding a set from a mixed brick pile?</h2>
+    <p>
+      Load your set's parts list, then tick off each piece as you find it — with photos, colours, minifigs, live stats,
+      and a pause button for bio breaks. No account. Progress saves in your browser.
+    </p>
+    <div class="welcome-cta">
+      <button class="btn" id="welcomeDemo">▶ Try the demo</button>
+      <button class="btn ghost" id="welcomeImport">📋 Import a parts list</button>
+    </div>
+    <div class="welcome-steps">
+      <div class="welcome-step"><b>1 · Get your list</b>Paste from BrickLink, upload a Brickset CSV, or use a free Rebrickable key.</div>
+      <div class="welcome-step"><b>2 · Dig &amp; tick</b>Each card is one part type. Hit + every time you fish one out of the pile.</div>
+      <div class="welcome-step"><b>3 · Watch the bar move</b>Progress, pace, value, and drop counter stay pinned while you scroll.</div>
+    </div>
+  </section>
+
+  <!-- Setup -->
+  <section class="panel setup">
+    <div class="setup-row">
+      <button class="btn" id="importBtn">📋 Import parts list</button>
+      <button class="btn ghost" id="demoBtn">▶ Try demo set</button>
+    </div>
+    <details class="setup-advanced">
+      <summary>Load by set number (Rebrickable API — optional)</summary>
+      <div class="setup-row" style="margin-top:12px">
+        <div class="field">
+          <label for="setNumber">LEGO set number</label>
+          <input type="text" id="setNumber" placeholder="e.g. 75192" autocomplete="off" />
+          <span class="hint">Digits only — we add <code>-1</code> for you.</span>
+        </div>
+        <button class="btn" id="loadBtn">🔍 Load set</button>
+        <div class="field" style="flex:1;min-width:220px">
+          <label for="apiKey">Rebrickable API key <span id="keyPill" class="pill off">not set</span></label>
+          <input type="password" id="apiKey" placeholder="free key — saved only in this browser" autocomplete="off" />
+        </div>
+      </div>
+      <div class="api-note">
+        <span>Free key from</span>
+        <a href="https://rebrickable.com/api/" target="_blank" rel="noopener">rebrickable.com/api</a>
+        <span>— or skip this entirely and <b>import a parts list</b> instead.</span>
+      </div>
+    </details>
+  </section>
+
+  <!-- Import (no API key) -->
+  <section class="panel import-panel" id="importPanel">
+    <div class="import-head">
+      <h3>📋 Import your parts list</h3>
+      <button class="btn ghost import-close" id="importClose" title="Close">✕</button>
+    </div>
+    <p class="import-intro">
+      <b>Best for BrickLink:</b> open a set's inventory page (e.g.
+      <code>bricklink.com/catalogItemInv.asp?S=6829-1</code>), select all (<b>Ctrl/Cmd+A</b>), copy, and paste below.
+      Part <b>images</b>, color, qty &amp; description are rebuilt automatically. Also accepts <b>CSV</b>,
+      <b>tab-separated</b>, and <b>BrickLink XML</b>. Not sure? Hit <b>Paste BrickLink sample</b>.
+    </p>
+    <div class="import-grid">
+      <div class="field">
+        <label for="importSetName">Set name / number <span class="hint">(used as the title &amp; to save progress)</span></label>
+        <input type="text" id="importSetName" placeholder="e.g. 75192 — Millennium Falcon" autocomplete="off" />
+      </div>
+      <div class="field import-file-field">
+        <label>Upload a file</label>
+        <label class="file-drop" id="fileDrop">
+          <input type="file" id="importFile" accept=".csv,.tsv,.txt,.xml" hidden />
+          <span id="fileDropText">Click to choose, or drag &amp; drop a .csv / .xml here</span>
+        </label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="importText">…or paste your parts list here</label>
+      <textarea id="importText" rows="8" placeholder="Part,Color,Quantity&#10;3001,Bright Red,6&#10;3023,White,10&#10;&#10;(headers optional — name/part, color, and quantity in any order)"></textarea>
+    </div>
+    <div class="import-actions">
+      <button class="btn" id="buildBtn">✅ Build Checklist</button>
+      <button class="btn ghost" id="blankBtn">🧱 Start blank list (add by hand)</button>
+      <button class="btn ghost" id="loadSampleBtn">Paste BrickLink sample</button>
+      <span class="import-msg" id="importMsg"></span>
+    </div>
+    <details class="import-help">
+      <summary>Which columns / formats are supported?</summary>
+      <div class="import-help-body">
+        <p><b>BrickLink:</b> paste the full inventory (parts <b>and</b> the Minifigures section) — rows look like <code>1 3004 Black Brick 1 x 2</code> or <code>1 sp043 UFO Droid…</code>. Minifigs get a purple <b>MINIFIG</b> badge.</p>
+        <p><b>CSV (Brickset etc.):</b> if a <code>Category</code> column says Minifigures, those rows are picked up automatically.</p>
+        <p><b>CSV / spreadsheet:</b> give a header row and the app maps these (any order, case-insensitive):</p>
+        <ul>
+          <li><b>Quantity</b> — <code>qty</code>, <code>quantity</code>, <code>count</code>, <code>need</code>, <code>minqty</code></li>
+          <li><b>Part name</b> — <code>name</code>, <code>part name</code>, <code>description</code></li>
+          <li><b>Part number</b> — <code>part</code>, <code>part_num</code>, <code>itemid</code>, <code>blitemno</code></li>
+          <li><b>Color</b> — <code>color</code>, <code>colour</code>, <code>color name</code> (names like “Bright Red” get auto-colored)</li>
+          <li><b>Color hex</b> — <code>rgb</code>, <code>hex</code> (optional, e.g. <code>C91A09</code>)</li>
+          <li><b>Image</b> — <code>img</code>, <code>img_url</code> (optional)</li>
+        </ul>
+        <p>No header? The app assumes <code>part, name, color, quantity</code> by position. Lines like <code>Brick 2 x 4 x6</code> also work.</p>
+        <p><b>Where to get a list without a key:</b> a set's page on Rebrickable or BrickLink, the back of newer instruction booklets, or any spreadsheet you build yourself.</p>
+      </div>
+    </details>
+  </section>
+
+  <div class="status" id="status"></div>
+
+  <!-- Set header -->
+  <section class="panel set-head" id="setHead">
+    <div class="set-head-inner">
+      <img class="set-img" id="setImg" alt="set" />
+      <div class="set-meta">
+        <h2 id="setName">Set name</h2>
+        <div class="sub" id="setSub">—</div>
+        <div class="stat-chips">
+          <div class="chip"><div class="num" id="statTotal">0</div><div class="lbl">Total Pieces</div></div>
+          <div class="chip"><div class="num" id="statUnique">0</div><div class="lbl">Unique Parts</div></div>
+          <div class="chip found"><div class="num" id="statFound">0</div><div class="lbl">Pieces Found</div></div>
+          <div class="chip remain"><div class="num" id="statRemain">0</div><div class="lbl">Remaining</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Progress -->
+  <section class="panel progress-wrap" id="progressWrap">
+    <div class="progress-top">
+      <span class="big" id="progressLabel">Sorting progress</span>
+      <span class="pct" id="progressPct">0%</span>
+    </div>
+    <div class="bar"><div id="progressBar"></div></div>
+  </section>
+
+  <!-- Live hunt stats -->
+  <section class="panel stats-wrap" id="statsWrap">
+    <div class="stats-head"><span class="live-dot"></span> Live Hunt Stats</div>
+    <div class="stat-tiles">
+      <div class="tile t-time"><div class="tile-ico">⏱️</div><div class="tile-val" id="stHuntTime">0:00</div><div class="tile-lbl">Hunt Time</div></div>
+      <div class="tile t-pace"><div class="tile-ico">⚡</div><div class="tile-val" id="stPace">0.0<span class="unit">/min</span></div><div class="tile-lbl">Finding Pace</div></div>
+      <div class="tile t-eta"><div class="tile-ico">🏁</div><div class="tile-val" id="stEta">—</div><div class="tile-lbl">Est. Time Left</div></div>
+      <div class="tile t-best"><div class="tile-ico">🔥</div><div class="tile-val" id="stBest">0<span class="unit">/min</span></div><div class="tile-lbl">Hottest Minute</div></div>
+      <div class="tile t-pile"><div class="tile-ico">📦</div><div class="tile-val" id="stPile">—</div><div class="tile-lbl">Biggest Pile Left</div></div>
+    </div>
+    <div class="color-bd-head">Color breakdown</div>
+    <div id="colorBars"></div>
+  </section>
+
+  <!-- Sticky HUD (always-visible stats while scrolling) -->
+  <div class="sticky-hud" id="stickyHud">
+    <div class="hud-inner">
+      <div class="hud-set">
+        <img class="hud-set-img" id="hudSetImg" alt="LEGO set" />
+      </div>
+      <div class="hud-main">
+        <div class="hud-stats">
+          <div class="hud-row hud-row-1">
+            <div class="hud-headline">
+              <span class="hud-title" id="hudName">Set</span>
+              <span class="hud-pct" id="hudPct">0%</span>
+            </div>
+            <div class="hud-cell hud-found">
+              <span class="hud-lbl">✓ Found</span>
+              <span class="hud-val"><span id="hudFound">0</span><small> / </small><span id="hudTotal">0</span></span>
+            </div>
+            <div class="hud-cell hud-remain">
+              <span class="hud-lbl">📦 Left</span>
+              <span class="hud-val" id="hudRemain">0</span>
+            </div>
+            <button type="button" class="hud-drop" id="dropBtn" title="Tap each time a piece hits the floor">
+              <span class="drop-ico">🧱💨</span>
+              <span class="drop-lbl">Dropped</span>
+              <span class="drop-count" id="hudDrops">0</span>
+            </button>
+            <button type="button" class="hud-pause" id="pauseBtn" title="Pause hunt timer (bio break, off-camera)">
+              <span class="pause-ico" id="pauseIco">⏸</span>
+              <span class="pause-lbl" id="pauseLbl">Pause</span>
+            </button>
+          </div>
+          <div class="hud-row hud-row-2">
+            <div class="hud-cell">
+              <span class="hud-lbl">⏱️ Hunt time</span>
+              <span class="hud-val" id="hudTime">0:00</span>
+            </div>
+            <div class="hud-cell">
+              <span class="hud-lbl">⚡ Pace</span>
+              <span class="hud-val"><span id="hudPace">0.0</span><small>/min</small></span>
+            </div>
+            <div class="hud-cell hud-value">
+              <span class="hud-lbl">💵 Used value</span>
+              <span class="hud-val" id="hudValue">—</span>
+            </div>
+            <div class="hud-cell hud-rate">
+              <span class="hud-lbl">💰 Earning</span>
+              <span class="hud-val"><span id="hudRate">—</span><small>/hr</small></span>
+            </div>
+            <div class="hud-cell hud-eta">
+              <span class="hud-lbl">🏁 ETA</span>
+              <span class="hud-val" id="hudEta">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="hud-bar"><div id="hudBar"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar" id="toolbar">
+    <input type="text" id="search" placeholder="🔎 Search part name, number or color…" autocomplete="off" />
+    <div class="seg" id="filterSeg">
+      <button data-filter="all" class="active">All</button>
+      <button data-filter="remaining">Remaining</button>
+      <button data-filter="found">Found</button>
+      <button data-filter="minifigs">Minifigs</button>
+    </div>
+    <select id="sortSel">
+      <option value="default">Sort: Set order</option>
+      <option value="color">Sort: By color</option>
+      <option value="qty-desc">Sort: Most pieces first</option>
+      <option value="qty-asc">Sort: Fewest pieces first</option>
+      <option value="name">Sort: Part name (A–Z)</option>
+    </select>
+    <div class="value-group" title="Used market value of the complete set — drives the $/hr earning rate">
+      <span class="value-label">💵 Used value</span>
+      <span class="value-cur">$</span>
+      <input type="text" inputmode="decimal" id="valueLow" placeholder="low" autocomplete="off" />
+      <span class="value-dash">–</span>
+      <input type="text" inputmode="decimal" id="valueHigh" placeholder="high" autocomplete="off" />
+      <a id="priceLink" class="price-link" href="https://www.bricklink.com/catalogPG.asp" target="_blank" rel="noopener" title="Look up this set's used value on BrickLink">guide ↗</a>
+    </div>
+    <div class="spacer"></div>
+    <span class="count-readout" id="countReadout"></span>
+    <button class="btn ghost" id="addPartBtn">➕ Add part</button>
+    <button class="btn ghost danger" id="resetBtn">↺ Reset progress</button>
+  </div>
+
+  <!-- Manual add-part panel (backup for incomplete/missing lists) -->
+  <div class="add-part" id="addPartPanel">
+    <span class="add-part-title">➕ Add a piece by hand</span>
+    <input type="text" id="apName" placeholder="Part name / description (required)" autocomplete="off" />
+    <input type="text" id="apColor" placeholder="Colour (optional)" autocomplete="off" />
+    <input type="number" id="apQty" min="1" step="1" value="1" title="Quantity needed" />
+    <input type="text" id="apImg" placeholder="Image URL (optional)" autocomplete="off" />
+    <button class="btn" id="apAdd">Add piece</button>
+    <button class="btn ghost" id="apClose">Done</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer class="site-footer">
+    <div class="footer-bbb">
+      <h3>Presented by Build Beyond Belief</h3>
+      <p>
+        I build free, practical tools so useful ideas become working things — then teach people how to do the same with AI.
+        Project Excavation is a sister project to
+        <a href="https://chrysalis.buildbeyondbelief.com" target="_blank" rel="noopener">Project Chrysalis</a>
+        (a free personal digital security audit). Same spirit: no account, no fluff, just something that helps this weekend.
+      </p>
+      <p>
+        If this tool saved you an afternoon of sorting, you might like what I do at
+        <a href="https://buildbeyondbelief.com" target="_blank" rel="noopener">buildbeyondbelief.com</a>
+        — practical AI coaching for engineers and builders.
+      </p>
+      <p class="footer-sister">
+        More free tools from B3:
+        <a href="https://chrysalis.buildbeyondbelief.com" target="_blank" rel="noopener">Project Chrysalis</a> ·
+        <a href="https://buildbeyondbelief.com/blueprint" target="_blank" rel="noopener">The Builder's Blueprint</a>
+      </p>
+    </div>
+    <div class="footer-legal">
+      Project Excavation is an independent fan tool, not affiliated with the LEGO Group.
+      LEGO® is a trademark of the LEGO Group. Part data may come from Rebrickable, BrickLink, Brickset, or your own import.
+      Nothing is uploaded — your progress stays in this browser.
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- State ----------
+  const state = {
+    setNum: null,
+    setInfo: null,
+    parts: [],        // [{key, name, partNum, colorName, colorHex, imgUrl, need, found}]
+    filter: "all",
+    sort: "default",
+    search: "",
+    session: { startMs: null, found: 0, events: [], paused: false, pauseStartMs: null, accumulatedPauseMs: 0 },
+    value: { low: 0, high: 0 }, // used market value range of the complete set ($)
+    drops: 0, // times a piece hit the floor this set
+  };
+
+  const API = "https://rebrickable.com/api/v3/lego";
+
+  // ---------- Elements ----------
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    setNumber: $("setNumber"), apiKey: $("apiKey"), keyPill: $("keyPill"),
+    loadBtn: $("loadBtn"), demoBtn: $("demoBtn"),
+    status: $("status"),
+    setHead: $("setHead"), setImg: $("setImg"), setName: $("setName"), setSub: $("setSub"),
+    statTotal: $("statTotal"), statUnique: $("statUnique"), statFound: $("statFound"), statRemain: $("statRemain"),
+    progressWrap: $("progressWrap"), progressBar: $("progressBar"), progressPct: $("progressPct"), progressLabel: $("progressLabel"),
+    toolbar: $("toolbar"), search: $("search"), filterSeg: $("filterSeg"), sortSel: $("sortSel"),
+    countReadout: $("countReadout"), resetBtn: $("resetBtn"),
+    grid: $("grid"),
+    celebrate: $("celebrate"), doneBanner: $("doneBanner"), doneSub: $("doneSub"),
+    statsWrap: $("statsWrap"),
+    stHuntTime: $("stHuntTime"), stPace: $("stPace"), stEta: $("stEta"), stBest: $("stBest"), stPile: $("stPile"),
+    colorBars: $("colorBars"), foundToast: $("foundToast"),
+    stickyHud: $("stickyHud"), hudSetImg: $("hudSetImg"), hudName: $("hudName"), hudPct: $("hudPct"), hudFound: $("hudFound"),
+    hudTotal: $("hudTotal"), hudRemain: $("hudRemain"), hudTime: $("hudTime"), hudPace: $("hudPace"), hudBar: $("hudBar"), hudEta: $("hudEta"),
+    hudValue: $("hudValue"), hudRate: $("hudRate"), hudDrops: $("hudDrops"), dropBtn: $("dropBtn"),
+    pauseBtn: $("pauseBtn"), pauseIco: $("pauseIco"), pauseLbl: $("pauseLbl"),
+    valueLow: $("valueLow"), valueHigh: $("valueHigh"), priceLink: $("priceLink"),
+    addPartBtn: $("addPartBtn"), addPartPanel: $("addPartPanel"), apName: $("apName"), apColor: $("apColor"),
+    apQty: $("apQty"), apImg: $("apImg"), apAdd: $("apAdd"), apClose: $("apClose"), blankBtn: $("blankBtn"),
+    importBtn: $("importBtn"), importPanel: $("importPanel"), importClose: $("importClose"),
+    importSetName: $("importSetName"), importFile: $("importFile"), fileDrop: $("fileDrop"), fileDropText: $("fileDropText"),
+    importText: $("importText"), buildBtn: $("buildBtn"), loadSampleBtn: $("loadSampleBtn"), importMsg: $("importMsg"),
+  };
+
+  // ---------- API key persistence ----------
+  const KEY_STORE = "brickhunt_apikey";
+  function loadKey() {
+    const k = localStorage.getItem(KEY_STORE) || "";
+    els.apiKey.value = k;
+    updateKeyPill();
+  }
+  function updateKeyPill() {
+    const has = els.apiKey.value.trim().length > 0;
+    els.keyPill.textContent = has ? "saved" : "not set";
+    els.keyPill.className = "pill " + (has ? "ok" : "off");
+  }
+  els.apiKey.addEventListener("input", () => {
+    localStorage.setItem(KEY_STORE, els.apiKey.value.trim());
+    updateKeyPill();
+  });
+
+  // ---------- Status helpers ----------
+  function showStatus(html, type) {
+    els.status.innerHTML = html;
+    els.status.className = "status show " + (type || "info");
+  }
+  function hideStatus() { els.status.className = "status"; }
+
+  // ---------- Set number normalisation ----------
+  function normalizeSetNum(raw) {
+    let s = (raw || "").trim();
+    if (!s) return "";
+    if (!s.includes("-")) s += "-1";
+    return s;
+  }
+
+  // ---------- Progress persistence (per set) ----------
+  function progressStoreKey(setNum) { return "brickhunt_progress_" + setNum; }
+  function saveProgress() {
+    if (!state.setNum) return;
+    const map = {};
+    state.parts.forEach((p) => { map[p.key] = p.found; });
+    localStorage.setItem(progressStoreKey(state.setNum), JSON.stringify(map));
+  }
+  function loadProgress(setNum) {
+    try { return JSON.parse(localStorage.getItem(progressStoreKey(setNum))) || {}; }
+    catch (e) { return {}; }
+  }
+  function valueStoreKey(setNum) { return "brickhunt_value_" + setNum; }
+  function saveValue() {
+    if (!state.setNum) return;
+    localStorage.setItem(valueStoreKey(state.setNum), JSON.stringify(state.value));
+  }
+  function loadValue(setNum) {
+    try { return JSON.parse(localStorage.getItem(valueStoreKey(setNum))) || { low: 0, high: 0 }; }
+    catch (e) { return { low: 0, high: 0 }; }
+  }
+  function dropsStoreKey(setNum) { return "brickhunt_drops_" + setNum; }
+  function saveDrops() {
+    if (!state.setNum) return;
+    localStorage.setItem(dropsStoreKey(state.setNum), String(state.drops));
+  }
+  function loadDrops(setNum) {
+    const n = parseInt(localStorage.getItem(dropsStoreKey(setNum)), 10);
+    return isFinite(n) && n >= 0 ? n : 0;
+  }
+  function updateDropsHud() {
+    els.hudDrops.textContent = state.drops;
+  }
+  function registerDrop() {
+    if (!state.setNum) return;
+    state.drops++;
+    saveDrops();
+    updateDropsHud();
+    els.dropBtn.classList.remove("bump");
+    void els.dropBtn.offsetWidth;
+    els.dropBtn.classList.add("bump");
+    setTimeout(() => els.dropBtn.classList.remove("bump"), 400);
+  }
+  function manualStoreKey(setNum) { return "brickhunt_manual_" + setNum; }
+  function saveManual() {
+    if (!state.setNum) return;
+    const list = state.parts.filter((p) => p.manual).map((p) => ({
+      name: p.name, partNum: p.partNum, colorName: p.colorName, colorHex: p.colorHex, imgUrl: p.imgUrl, need: p.need,
+    }));
+    localStorage.setItem(manualStoreKey(state.setNum), JSON.stringify(list));
+  }
+  function loadManual(setNum) {
+    try { return JSON.parse(localStorage.getItem(manualStoreKey(setNum))) || []; }
+    catch (e) { return []; }
+  }
+
+  // ---------- Set box image (API, BrickLink, or fallback) ----------
+  function normalizeSetNumForImg(setNum) {
+    const s = String(setNum || "").trim();
+    const embedded = s.match(/(\d{3,6}-\d+)/);
+    if (embedded) return embedded[1];
+    if (!s || s.startsWith("import_") || s.startsWith("manual_")) return "";
+    if (/^\d+$/.test(s)) return s + "-1";
+    if (/^\d+-\d+$/.test(s)) return s;
+    return "";
+  }
+  function setImgCandidates(setNum, apiUrl) {
+    const list = [];
+    if (apiUrl) list.push(apiUrl);
+    const sn = normalizeSetNumForImg(setNum);
+    if (sn) {
+      list.push("https://img.bricklink.com/ItemImage/SN/0/" + encodeURIComponent(sn) + ".png");
+      list.push("https://img.bricklink.com/S/" + encodeURIComponent(sn) + ".gif");
+    }
+    list.push(brickSvg("#4aa3ff"));
+    return list;
+  }
+  function applySetImage(imgEl, setNum, apiUrl) {
+    const queue = setImgCandidates(setNum, apiUrl);
+    imgEl.alt = "LEGO set";
+    imgEl.style.display = "";
+    imgEl.onerror = () => {
+      if (queue.length) { imgEl.src = queue.shift(); return; }
+      imgEl.onerror = null;
+    };
+    imgEl.src = queue.shift();
+  }
+
+  // ---------- SVG fallback brick (so cards always show something) ----------
+  function brickSvg(hex) {
+    const c = hex || "#bbbbbb";
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="64" viewBox="0 0 80 64">' +
+      '<rect x="8" y="22" width="64" height="34" rx="4" fill="' + c + '" stroke="rgba(0,0,0,.25)"/>' +
+      '<ellipse cx="26" cy="22" rx="11" ry="7" fill="' + c + '" stroke="rgba(0,0,0,.25)"/>' +
+      '<ellipse cx="54" cy="22" rx="11" ry="7" fill="' + c + '" stroke="rgba(0,0,0,.25)"/>' +
+      '<ellipse cx="26" cy="20" rx="11" ry="7" fill="rgba(255,255,255,.25)"/>' +
+      '<ellipse cx="54" cy="20" rx="11" ry="7" fill="rgba(255,255,255,.25)"/>' +
+      '</svg>';
+    return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+  }
+
+  // ---------- Fetch helpers ----------
+  async function apiGet(path) {
+    const key = els.apiKey.value.trim();
+    if (!key) throw new Error("NO_KEY");
+    const url = API + path + (path.includes("?") ? "&" : "?") + "key=" + encodeURIComponent(key);
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (res.status === 401 || res.status === 403) throw new Error("BAD_KEY");
+    if (res.status === 404) throw new Error("NOT_FOUND");
+    if (!res.ok) throw new Error("HTTP_" + res.status);
+    return res.json();
+  }
+
+  async function fetchAllPages(pathWithQuery) {
+    let items = [];
+    let url = pathWithQuery;
+    while (url) {
+      const data = await apiGet(url);
+      items = items.concat(data.results || []);
+      if (data.next) {
+        const u = new URL(data.next);
+        url = u.pathname.replace("/api/v3/lego", "") + u.search.replace(/([?&])key=[^&]*/, "$1").replace(/[?&]$/, "");
+        if (!url.includes("?")) url += "?";
+      } else {
+        url = null;
+      }
+    }
+    return items;
+  }
+
+  async function fetchAllParts(setNum) {
+    return fetchAllPages("/sets/" + encodeURIComponent(setNum) + "/parts/?page_size=1000");
+  }
+
+  async function fetchSetMinifigs(setNum) {
+    return fetchAllPages("/sets/" + encodeURIComponent(setNum) + "/minifigs/?page_size=1000");
+  }
+
+  function isMinifigId(id) {
+    // Minifig numbers start with letters (sp043, sw0001) — not plain part numbers like 3001
+    return /^[a-z]{2,5}\d{3,}[a-z]?$/i.test(String(id || "").trim());
+  }
+
+  function minifigPartNum(raw) {
+    const s = String(raw || "").trim();
+    const m = s.match(/^([a-z]{2,5}\d{3,}[a-z]?)(?:-\d+)?$/i);
+    return m ? m[1] : s.replace(/-\d+$/, "");
+  }
+
+  function partFromRebrickableMinifig(r) {
+    const m = r.minifig || r.set || r;
+    const fullNum = m.set_num || m.minifig_num || "";
+    const partNum = minifigPartNum(fullNum);
+    const imgFb = partNum
+      ? ["https://img.bricklink.com/ItemImage/MN/0/" + encodeURIComponent(partNum) + ".png"]
+      : [];
+    return {
+      key: "mf_" + (fullNum || partNum),
+      name: m.name || ("Minifigure " + partNum),
+      partNum: partNum || fullNum || "—",
+      colorName: "Minifigure",
+      colorHex: "#923978",
+      imgUrl: m.set_img_url || null,
+      imgFallbacks: imgFb,
+      need: r.quantity || 1,
+      found: 0,
+      isMinifig: true,
+    };
+  }
+
+  // ---------- Load real set ----------
+  async function loadSet() {
+    const setNum = normalizeSetNum(els.setNumber.value);
+    if (!setNum) { showStatus("Type a set number first — e.g. <b>75192</b>.", "err"); return; }
+    if (!els.apiKey.value.trim()) {
+      showStatus("No API key yet. Add a free key from <a href='https://rebrickable.com/api/' target='_blank'>rebrickable.com/api</a>, or press <b>Try Demo Set</b>.", "err");
+      return;
+    }
+    showStatus('<span class="spinner"></span> &nbsp;Loading set <b>' + setNum + "</b>…", "info");
+    els.loadBtn.disabled = true;
+
+    try {
+      const info = await apiGet("/sets/" + encodeURIComponent(setNum) + "/");
+      const [rawParts, rawMinifigs] = await Promise.all([
+        fetchAllParts(setNum),
+        fetchSetMinifigs(setNum).catch(() => []),
+      ]);
+
+      const parts = rawParts
+        .filter((r) => !r.is_spare)
+        .map((r) => ({
+          key: r.part.part_num + "_" + r.color.id + "_" + (r.element_id || ""),
+          name: r.part.name || "Unknown part",
+          partNum: r.part.part_num,
+          colorName: r.color.name || "—",
+          colorHex: r.color.rgb ? "#" + r.color.rgb : "#bbbbbb",
+          imgUrl: r.part.part_img_url || null,
+          imgFallbacks: [],
+          need: r.quantity || 1,
+          found: 0,
+          isMinifig: false,
+        }));
+
+      const minifigs = rawMinifigs.map(partFromRebrickableMinifig);
+      const all = parts.concat(minifigs);
+
+      if (!all.length) { showStatus("No parts found for <b>" + setNum + "</b>.", "err"); return; }
+
+      applyLoadedSet(setNum, {
+        name: info.name,
+        year: info.year,
+        num: info.set_num,
+        imgUrl: info.set_img_url,
+        numParts: info.num_parts,
+      }, all);
+      if (minifigs.length) {
+        showStatus("Loaded <b>" + parts.length + "</b> parts + <b>" + minifigs.length + "</b> minifig" + (minifigs.length > 1 ? "s" : "") + ".", "info");
+        setTimeout(hideStatus, 3200);
+      } else {
+        hideStatus();
+      }
+    } catch (e) {
+      handleError(e, setNum);
+    } finally {
+      els.loadBtn.disabled = false;
+    }
+  }
+
+  function handleError(e, setNum) {
+    if (e.message === "NO_KEY")
+      showStatus("Add your free Rebrickable API key first, or press <b>Try Demo Set</b>.", "err");
+    else if (e.message === "BAD_KEY")
+      showStatus("That API key was rejected. Double-check it at <a href='https://rebrickable.com/api/' target='_blank'>rebrickable.com/api</a>.", "err");
+    else if (e.message === "NOT_FOUND")
+      showStatus("Couldn't find set <b>" + setNum + "</b>. Try the full number like <b>75192-1</b>.", "err");
+    else
+      showStatus("Something went wrong loading that set (" + e.message + "). If you're opening this file directly, the browser may block the request — try the Demo set, or host the file.", "err");
+  }
+
+  // ---------- Demo set ----------
+  function loadDemo() {
+    const d = [
+      ["3001", "Brick 2 x 4", "Bright Red", "#C91A09", 6],
+      ["3003", "Brick 2 x 2", "Bright Red", "#C91A09", 4],
+      ["3004", "Brick 1 x 2", "Black", "#05131D", 8],
+      ["3010", "Brick 1 x 4", "Black", "#05131D", 5],
+      ["3020", "Plate 2 x 4", "Bright Yellow", "#F2CD37", 6],
+      ["3021", "Plate 2 x 3", "Bright Yellow", "#F2CD37", 4],
+      ["3022", "Plate 2 x 2", "Dark Azur", "#36AEBF", 5],
+      ["3023", "Plate 1 x 2", "White", "#FFFFFF", 10],
+      ["3024", "Plate 1 x 1", "White", "#FFFFFF", 12],
+      ["3039", "Slope 45° 2 x 2", "Bright Blue", "#0055BF", 4],
+      ["3040", "Slope 45° 2 x 1", "Bright Blue", "#0055BF", 6],
+      ["3062b", "Round Brick 1 x 1", "Trans-Clear", "#FCFCFC", 4],
+      ["3068b", "Tile 2 x 2", "Reddish Brown", "#582A12", 5],
+      ["3069b", "Tile 1 x 2", "Light Bluish Gray", "#A0A5A9", 7],
+      ["3070b", "Tile 1 x 1", "Dark Bluish Gray", "#6C6E68", 9],
+      ["3795", "Plate 2 x 6", "Sand Green", "#A0BCAC", 3],
+      ["2877", "Brick 1 x 2 Grille", "Dark Bluish Gray", "#6C6E68", 4],
+      ["6558", "Pin Long w/ Friction", "Bright Blue", "#0055BF", 8],
+      ["3713", "Bush for Cross Axle", "Light Bluish Gray", "#A0A5A9", 6],
+      ["32062", "Axle 2 Notched", "Black", "#05131D", 5],
+      ["98138", "Round Tile 1 x 1", "Bright Green", "#4B9F4A", 6],
+      ["11477", "Slope Curved 2 x 1", "White", "#FFFFFF", 8],
+      ["15068", "Slope Curved 2 x 2", "Bright Orange", "#FE8A18", 4],
+      ["4073", "Round Plate 1 x 1", "Trans-Red", "#C91A09", 6],
+    ];
+    const parts = d.map((row, i) => ({
+      key: "demo_" + row[0] + "_" + i,
+      name: row[1],
+      partNum: row[0],
+      colorName: row[2],
+      colorHex: row[3],
+      imgUrl: null,
+      imgFallbacks: [],
+      need: row[4],
+      found: 0,
+      isMinifig: false,
+    }));
+    parts.push({
+      key: "mf_sp043",
+      name: "UFO Droid - Blue (Techdroid 1)",
+      partNum: "sp043",
+      colorName: "Minifigure",
+      colorHex: "#923978",
+      imgUrl: "https://img.bricklink.com/ItemImage/MN/0/sp043.png",
+      imgFallbacks: [],
+      need: 1,
+      found: 0,
+      isMinifig: true,
+    });
+    applyLoadedSet("DEMO-1", {
+      name: "Demo Build — Sample Brick Pile",
+      year: 2026,
+      num: "DEMO-1",
+      imgUrl: null,
+      numParts: parts.reduce((s, p) => s + p.need, 0),
+    }, parts);
+    els.setNumber.value = "";
+    hideStatus();
+  }
+
+  // ---------- Apply loaded set ----------
+  function applyLoadedSet(setNum, info, parts) {
+    state.setNum = setNum;
+    state.setInfo = info;
+    // append any manually-added pieces saved for this set (backup for incomplete lists)
+    const manual = loadManual(setNum).map((m) => ({
+      key: "manual|" + m.name + "|" + (m.colorName || "Custom"),
+      name: m.name, partNum: m.partNum || "—", colorName: m.colorName || "Custom",
+      colorHex: m.colorHex || colorHexFromName(m.colorName) || "#9aa9c7",
+      imgUrl: m.imgUrl || null, imgFallbacks: [], need: m.need || 1, found: 0, manual: true,
+    }));
+    state.parts = parts.concat(manual);
+
+    // restore progress
+    const saved = loadProgress(setNum);
+    state.parts.forEach((p) => {
+      if (typeof saved[p.key] === "number") p.found = Math.min(saved[p.key], p.need);
+    });
+
+    // set header
+    els.setName.textContent = info.name || setNum;
+    els.setSub.textContent = "Set " + (info.num || setNum) + (info.year ? " · " + info.year : "");
+    const imgKey = info.num || setNum;
+    applySetImage(els.setImg, imgKey, info.imgUrl);
+    applySetImage(els.hudSetImg, imgKey, info.imgUrl);
+
+    // fresh hunt session for this load
+    state.session = { startMs: null, found: 0, events: [], paused: false, pauseStartMs: null, accumulatedPauseMs: 0 };
+    updatePauseUi();
+    wasComplete = totals().total > 0 && totals().found === totals().total;
+
+    // restore saved used-value range & drop count
+    state.value = loadValue(setNum);
+    els.valueLow.value = state.value.low || "";
+    els.valueHigh.value = state.value.high || "";
+    state.drops = loadDrops(setNum);
+    updateDropsHud();
+    // point the price-guide link at this set (real set numbers like 6829-1; imports fall back to search)
+    const realSet = /^\d+(-\d+)?$/.test(setNum);
+    els.priceLink.href = realSet
+      ? "https://www.bricklink.com/catalogPG.asp?S=" + encodeURIComponent(setNum.includes("-") ? setNum : setNum + "-1")
+      : "https://www.bricklink.com/v2/search.page?q=" + encodeURIComponent(info.name || setNum);
+
+    els.hudName.textContent = info.name || setNum;
+    els.setHead.classList.add("show");
+    els.progressWrap.classList.add("show");
+    els.statsWrap.classList.add("show");
+    els.stickyHud.classList.add("show");
+    els.toolbar.classList.add("show");
+
+    startStatsTimer();
+    render();
+    els.setHead.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ---------- Derived totals ----------
+  function totals() {
+    let total = 0, found = 0;
+    state.parts.forEach((p) => { total += p.need; found += p.found; });
+    return { total, found, remaining: total - found, unique: state.parts.length };
+  }
+
+  // ---------- Filtering + sorting ----------
+  function visibleParts() {
+    const q = state.search.trim().toLowerCase();
+    let list = state.parts.filter((p) => {
+      const done = p.found >= p.need;
+      if (state.filter === "remaining" && done) return false;
+      if (state.filter === "found" && !done) return false;
+      if (state.filter === "minifigs" && !p.isMinifig) return false;
+      if (q) {
+        const hay = (p.name + " " + p.partNum + " " + p.colorName).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    const s = state.sort;
+    if (s === "color") list.sort((a, b) => a.colorName.localeCompare(b.colorName) || a.name.localeCompare(b.name));
+    else if (s === "qty-desc") list.sort((a, b) => b.need - a.need);
+    else if (s === "qty-asc") list.sort((a, b) => a.need - b.need);
+    else if (s === "name") list.sort((a, b) => a.name.localeCompare(b.name));
+    return list;
+  }
+
+  // ---------- Render ----------
+  function render() {
+    const t = totals();
+    els.statTotal.textContent = t.total;
+    els.statUnique.textContent = t.unique;
+    els.statFound.textContent = t.found;
+    els.statRemain.textContent = t.remaining;
+
+    const pct = t.total ? Math.round((t.found / t.total) * 100) : 0;
+    els.progressBar.style.width = pct + "%";
+    els.progressPct.textContent = pct + "%";
+    els.progressLabel.textContent = t.found + " of " + t.total + " pieces found";
+
+    // sticky HUD (mirrors the headline numbers, always on screen)
+    els.hudPct.textContent = pct + "%";
+    els.hudFound.textContent = t.found;
+    els.hudTotal.textContent = t.total;
+    els.hudRemain.textContent = t.remaining;
+    els.hudBar.style.width = pct + "%";
+
+    renderStats(t);
+
+    const list = visibleParts();
+    const uniqueDone = state.parts.filter((p) => p.found >= p.need).length;
+    const mfTotal = state.parts.filter((p) => p.isMinifig).length;
+    els.countReadout.textContent = "Showing " + list.length + " of " + state.parts.length + " types · " + uniqueDone + " complete" +
+      (mfTotal ? " · " + mfTotal + " minifig" + (mfTotal > 1 ? "s" : "") : "");
+
+    els.grid.innerHTML = "";
+    if (!list.length) {
+      const d = document.createElement("div");
+      d.className = "empty";
+      d.textContent = state.search
+        ? "No parts match your search."
+        : (state.filter === "found" ? "Nothing found yet — go dig!" : "All parts in this view are done. 🎉");
+      els.grid.appendChild(d);
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+    list.forEach((p) => frag.appendChild(cardEl(p)));
+    els.grid.appendChild(frag);
+  }
+
+  function cardEl(p) {
+    const done = p.found >= p.need;
+    const card = document.createElement("div");
+    card.className = "card" + (p.isMinifig ? " minifig" : "") + (done ? " done" : "");
+
+    const img = document.createElement("img");
+    img.className = "part-img";
+    img.alt = p.name;
+    const queue = (p.imgFallbacks || []).slice();
+    img.src = p.imgUrl || queue.shift() || brickSvg(p.colorHex);
+    img.onerror = () => {
+      // BrickLink images may be served as .gif/.jpg for older parts — try those before moving on
+      const u = img.src;
+      if (/img\.bricklink\.com.*\.png$/i.test(u)) { img.src = u.replace(/\.png$/i, ".gif"); return; }
+      if (/img\.bricklink\.com.*\.gif$/i.test(u)) { img.src = u.replace(/\.gif$/i, ".jpg"); return; }
+      if (queue.length) { img.src = queue.shift(); return; }
+      img.onerror = null;
+      img.src = brickSvg(p.colorHex);
+    };
+
+    const info = document.createElement("div");
+    info.className = "part-info";
+    info.innerHTML =
+      '<div class="part-name">' + esc(p.name) + "</div>" +
+      '<div class="part-num">' + (p.isMinifig ? "Minifig #" : "Part #") + esc(p.partNum) + "</div>";
+
+    const colorRow = document.createElement("div");
+    colorRow.className = "color-row";
+    colorRow.innerHTML = '<span class="swatch" style="background:' + p.colorHex + '"></span>' + esc(p.colorName);
+
+    const top = document.createElement("div");
+    top.className = "card-top";
+    top.appendChild(img);
+    top.appendChild(info);
+
+    // counter
+    const counter = document.createElement("div");
+    counter.className = "counter";
+
+    const minus = document.createElement("button");
+    minus.className = "step minus";
+    minus.textContent = "−";
+    minus.disabled = p.found <= 0;
+    minus.title = "Remove one";
+    minus.onclick = () => changeFound(p, -1);
+
+    const qty = document.createElement("div");
+    qty.className = "qty";
+    qty.innerHTML = p.found + ' <span class="need">/ ' + p.need + "</span>";
+
+    const plus = document.createElement("button");
+    plus.className = "step plus";
+    plus.textContent = "+";
+    plus.disabled = p.found >= p.need;
+    plus.title = "Found one";
+    plus.onclick = () => changeFound(p, +1);
+
+    counter.appendChild(minus);
+    counter.appendChild(qty);
+    counter.appendChild(plus);
+
+    const markBtn = document.createElement("button");
+    markBtn.className = "mark-btn";
+    markBtn.textContent = done ? "✓ Got all — undo" : "Mark all found";
+    markBtn.onclick = () => {
+      const prev = p.found;
+      p.found = done ? 0 : p.need;
+      if (p.found > prev) recordFound(p, p.found - prev);
+      afterChange(p);
+    };
+
+    card.appendChild(top);
+    card.appendChild(colorRow);
+    card.appendChild(counter);
+    card.appendChild(markBtn);
+    return card;
+  }
+
+  function changeFound(p, delta) {
+    const next = Math.max(0, Math.min(p.need, p.found + delta));
+    if (next === p.found) return;
+    const gained = next - p.found;
+    p.found = next;
+    if (gained > 0) recordFound(p, gained);
+    afterChange(p);
+  }
+
+  function recordFound(p, count) {
+    const now = Date.now();
+    if (state.session.startMs === null) state.session.startMs = now;
+    for (let i = 0; i < count; i++) state.session.events.push(now);
+    state.session.found += count;
+    showFoundToast(p, count);
+  }
+
+  let wasComplete = false;
+  function afterChange(p) {
+    saveProgress();
+    render();
+    const t = totals();
+    const nowComplete = t.total > 0 && t.found === t.total;
+    if (nowComplete && !wasComplete) celebrate(t);
+    wasComplete = nowComplete;
+  }
+
+  // ---------- Found toast ----------
+  let toastTimer = null;
+  function showFoundToast(p, count) {
+    els.foundToast.innerHTML =
+      '<span class="ft-swatch" style="background:' + p.colorHex + '"></span>' +
+      "<span>Found " + (count > 1 ? "×" + count + " " : "") + esc(p.name) +
+      '<span class="ft-sub"> · ' + esc(p.colorName) + "</span></span>";
+    els.foundToast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => els.foundToast.classList.remove("show"), 1900);
+  }
+
+  // ---------- Hunt timer (active time excludes pauses) ----------
+  function sessionActiveMs() {
+    const s = state.session;
+    if (!s.startMs) return 0;
+    const pauseNow = s.paused && s.pauseStartMs ? Date.now() - s.pauseStartMs : 0;
+    return Math.max(0, Date.now() - s.startMs - (s.accumulatedPauseMs || 0) - pauseNow);
+  }
+
+  function togglePause() {
+    if (!state.setNum) return;
+    const s = state.session;
+    if (!s.paused) {
+      s.paused = true;
+      s.pauseStartMs = Date.now();
+    } else {
+      if (s.pauseStartMs) s.accumulatedPauseMs += Date.now() - s.pauseStartMs;
+      s.pauseStartMs = null;
+      s.paused = false;
+    }
+    updatePauseUi();
+    renderStats(totals());
+  }
+
+  function updatePauseUi() {
+    const paused = state.session.paused;
+    els.pauseBtn.classList.toggle("is-paused", paused);
+    els.stickyHud.classList.toggle("is-paused", paused);
+    els.pauseIco.textContent = paused ? "▶" : "⏸";
+    els.pauseLbl.textContent = paused ? "Resume" : "Pause";
+    els.pauseBtn.title = paused ? "Resume hunt timer" : "Pause hunt timer (bio break, off-camera)";
+  }
+
+  // ---------- Live hunt stats ----------
+  let statsTimer = null;
+  function startStatsTimer() {
+    if (statsTimer) clearInterval(statsTimer);
+    statsTimer = setInterval(tickStats, 1000);
+  }
+  function tickStats() {
+    const elapsedMs = sessionActiveMs();
+    const hms = fmtDuration(elapsedMs);
+    els.stHuntTime.textContent = hms;
+    els.hudTime.textContent = hms;
+    updatePaceEta(totals(), elapsedMs);
+  }
+
+  function updatePaceEta(t, elapsedMs) {
+    const s = state.session;
+    const mins = elapsedMs / 60000;
+    const pace = mins > 0 ? s.found / mins : 0;
+    els.stPace.innerHTML = pace.toFixed(1) + '<span class="unit">/min</span>';
+    els.hudPace.textContent = pace.toFixed(1);
+    let eta;
+    if (t.remaining <= 0) eta = "Done! 🎉";
+    else if (pace > 0 && s.found >= 2) eta = fmtDuration((t.remaining / pace) * 60000);
+    else eta = "—";
+    els.stEta.textContent = eta;
+    els.hudEta.textContent = eta;
+
+    updateValueHud(t, elapsedMs);
+  }
+
+  function fmtMoney(n) {
+    return "$" + Math.round(n).toLocaleString("en-US");
+  }
+  function fmtMoneyRange(lo, hi) {
+    if (lo > 0 && hi > 0 && hi !== lo) return fmtMoney(lo) + "–" + fmtMoney(hi);
+    const v = hi || lo;
+    return v > 0 ? fmtMoney(v) : "—";
+  }
+
+  function updateValueHud(t, elapsedMs) {
+    const { low, high } = state.value;
+    const hasValue = low > 0 || high > 0;
+    els.hudValue.textContent = hasValue ? fmtMoneyRange(low, high) : "set $ ↘";
+
+    // earning rate = value of the pieces found THIS SESSION, divided by hours spent this session
+    const hours = elapsedMs / 3600000;
+    const sessionFound = state.session.found;
+    const frac = t.total ? sessionFound / t.total : 0;
+    if (hasValue && hours > 0 && sessionFound > 0) {
+      els.hudRate.textContent = fmtMoneyRange((frac * low) / hours, (frac * high) / hours);
+    } else if (!hasValue) {
+      els.hudRate.textContent = "—";
+    } else {
+      els.hudRate.textContent = "$0"; // value set, hunt not started yet
+    }
+  }
+
+  function bestMinute() {
+    const ev = state.session.events;
+    if (!ev.length) return 0;
+    let best = 0;
+    for (let i = 0; i < ev.length; i++) {
+      let c = 0;
+      for (let j = i; j < ev.length && ev[j] - ev[i] < 60000; j++) c++;
+      if (c > best) best = c;
+    }
+    return best;
+  }
+
+  function renderStats(t) {
+    const elapsedMs = sessionActiveMs();
+    const hms = fmtDuration(elapsedMs);
+    els.stHuntTime.textContent = hms;
+    els.hudTime.textContent = hms;
+    updatePaceEta(t, elapsedMs);
+    els.stBest.innerHTML = bestMinute() + '<span class="unit">/min</span>';
+
+    // biggest pile still remaining
+    let big = null;
+    state.parts.forEach((p) => {
+      const rem = p.need - p.found;
+      if (rem > 0 && (!big || rem > big.rem)) big = { rem, name: p.name, hex: p.colorHex };
+    });
+    els.stPile.innerHTML = big
+      ? big.rem + '<span class="unit">×</span><small>' + esc(big.name) + "</small>"
+      : "All found ✓";
+
+    renderColorBars();
+  }
+
+  function renderColorBars() {
+    const map = new Map();
+    state.parts.forEach((p) => {
+      const k = p.colorName + "|" + p.colorHex;
+      const m = map.get(k) || { name: p.colorName, hex: p.colorHex, need: 0, found: 0 };
+      m.need += p.need; m.found += p.found;
+      map.set(k, m);
+    });
+    let rows = [...map.values()].sort((a, b) => b.need - a.need);
+    const LIMIT = 14;
+    const extra = rows.length - LIMIT;
+    rows = rows.slice(0, LIMIT);
+
+    els.colorBars.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    rows.forEach((c) => {
+      const pct = c.need ? Math.round((c.found / c.need) * 100) : 0;
+      const done = c.found >= c.need;
+      const row = document.createElement("div");
+      row.className = "cbar" + (done ? " done" : "");
+      row.innerHTML =
+        '<div class="cbar-top">' +
+          '<span class="swatch" style="background:' + c.hex + '"></span>' +
+          '<span class="cname">' + esc(c.name) + (done ? " ✓" : "") + "</span>" +
+          '<span class="cnums"><b>' + c.found + "</b> / " + c.need + "</span>" +
+        "</div>" +
+        '<div class="cbar-track"><div class="cbar-fill" style="width:' + pct + "%;background:" + c.hex + ';color:' + c.hex + '"></div></div>';
+      frag.appendChild(row);
+    });
+    if (extra > 0) {
+      const more = document.createElement("div");
+      more.className = "cbar-more";
+      more.textContent = "+ " + extra + " more color" + (extra > 1 ? "s" : "");
+      frag.appendChild(more);
+    }
+    els.colorBars.appendChild(frag);
+  }
+
+  function fmtDuration(ms) {
+    const total = Math.max(0, Math.round(ms / 1000));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const sec = total % 60;
+    const pad = (n) => String(n).padStart(2, "0");
+    return h > 0 ? h + ":" + pad(m) + ":" + pad(sec) : m + ":" + pad(sec);
+  }
+
+  // ---------- Celebration ----------
+  function celebrate(t) {
+    els.doneSub.textContent = "All " + t.total + " pieces accounted for.";
+    els.doneBanner.classList.add("show");
+    els.celebrate.classList.add("show");
+    const colors = ["#ffcf2b", "#ff5a3c", "#38d39f", "#4aa3ff", "#ffffff", "#c91a09"];
+    for (let i = 0; i < 120; i++) {
+      const c = document.createElement("div");
+      c.className = "confetti";
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.background = colors[(Math.random() * colors.length) | 0];
+      c.style.animationDuration = 2.5 + Math.random() * 2.5 + "s";
+      c.style.animationDelay = Math.random() * 0.6 + "s";
+      els.celebrate.appendChild(c);
+    }
+    setTimeout(() => {
+      els.doneBanner.classList.remove("show");
+      els.celebrate.classList.remove("show");
+      els.celebrate.innerHTML = "";
+    }, 5200);
+  }
+
+  // ---------- Utils ----------
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (m) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]
+    ));
+  }
+
+  // ---------- Events ----------
+  els.loadBtn.addEventListener("click", loadSet);
+  els.demoBtn.addEventListener("click", loadDemo);
+  $("welcomeDemo").addEventListener("click", loadDemo);
+  $("welcomeImport").addEventListener("click", () => {
+    els.importPanel.classList.add("show");
+    els.importPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  els.setNumber.addEventListener("keydown", (e) => { if (e.key === "Enter") loadSet(); });
+
+  els.search.addEventListener("input", () => { state.search = els.search.value; render(); });
+  els.sortSel.addEventListener("change", () => { state.sort = els.sortSel.value; render(); });
+  function parseMoney(v) {
+    const n = parseFloat(String(v).replace(/[^0-9.]/g, ""));
+    return isFinite(n) && n > 0 ? n : 0;
+  }
+  function onValueInput() {
+    state.value = { low: parseMoney(els.valueLow.value), high: parseMoney(els.valueHigh.value) };
+    saveValue();
+    updateValueHud(totals(), sessionActiveMs());
+  }
+  els.valueLow.addEventListener("input", onValueInput);
+  els.valueHigh.addEventListener("input", onValueInput);
+  els.dropBtn.addEventListener("click", registerDrop);
+  els.pauseBtn.addEventListener("click", togglePause);
+  els.filterSeg.addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    state.filter = b.dataset.filter;
+    [...els.filterSeg.children].forEach((c) => c.classList.toggle("active", c === b));
+    render();
+  });
+  els.resetBtn.addEventListener("click", () => {
+    if (!state.setNum) return;
+    if (!confirm("Reset all progress for this set?")) return;
+    state.parts.forEach((p) => (p.found = 0));
+    state.session = { startMs: null, found: 0, events: [], paused: false, pauseStartMs: null, accumulatedPauseMs: 0 };
+    updatePauseUi();
+    wasComplete = false;
+    saveProgress();
+    render();
+  });
+
+  // ===================================================================
+  //  IMPORT (no API key)
+  // ===================================================================
+
+  // LEGO color name -> hex (so a plain "color name" column still looks right)
+  const COLOR_NAME_HEX = {
+    "white": "#FFFFFF", "black": "#05131D", "red": "#C91A09", "brightred": "#C91A09",
+    "blue": "#0055BF", "brightblue": "#0055BF", "yellow": "#F2CD37", "brightyellow": "#F2CD37",
+    "green": "#237841", "darkgreen": "#184632", "brightgreen": "#4B9F4A", "brightgreenx": "#4B9F4A",
+    "orange": "#FE8A18", "brightorange": "#FE8A18", "darkorange": "#A95500", "tan": "#E4CD9E",
+    "darktan": "#958A73", "brown": "#583927", "reddishbrown": "#582A12", "darkbrown": "#352100",
+    "nougat": "#D09168", "lightnougat": "#F6D7B3", "mediumnougat": "#AA7D55",
+    "lightbluishgray": "#A0A5A9", "lightbluishgrey": "#A0A5A9", "darkbluishgray": "#6C6E68",
+    "darkbluishgrey": "#6C6E68", "lightgray": "#9BA19D", "lightgrey": "#9BA19D",
+    "darkgray": "#6D6E5C", "darkgrey": "#6D6E5C", "gray": "#9BA19D", "grey": "#9BA19D",
+    "mediumblue": "#5A93DB", "darkblue": "#0A3463", "darkazur": "#078BC9", "darkazure": "#078BC9",
+    "mediumazure": "#36AEBF", "maerskblue": "#3592C3", "sandblue": "#6074A1", "sandgreen": "#A0BCAC",
+    "sandred": "#D67572", "lime": "#BBE90B", "yellowishgreen": "#DFEEA5", "olivegreen": "#9B9A5A",
+    "darkred": "#720E0F", "darkpurple": "#3F3691", "purple": "#81007B", "magenta": "#923978",
+    "pink": "#FC97AC", "brightpink": "#E4ADC8", "darkpink": "#C870A0", "coral": "#FF698F",
+    "brightlightorange": "#F8BB3D", "brightlightyellow": "#FFF03A", "brightlightblue": "#9FC3E9",
+    "mediumlavender": "#AC78BA", "lavender": "#E1D5ED", "aqua": "#B3D7D1",
+    "gold": "#DBAC34", "metallicgold": "#DBAC34", "silver": "#A5A9B4", "flatsilver": "#898788",
+    "metallicsilver": "#A5A9B4", "pearlgold": "#AA7F2E", "chromesilver": "#E0E0E0",
+    "transclear": "#FCFCFC", "transparent": "#FCFCFC", "clear": "#FCFCFC",
+    "transred": "#C91A09", "transblue": "#0020A0", "transyellow": "#F5CD2F",
+    "transgreen": "#84B68D", "transorange": "#F08F1C", "transblack": "#635F52",
+    "transsmoke": "#635F52", "transbrown": "#635F52", "transpurple": "#A5A5CB",
+    "transneongreen": "#F8F184", "transneonorange": "#FF800D", "translightblue": "#AEEFEC",
+    "transpink": "#DF6695", "glowinthedark": "#D9D9D9", "glowinthedarkopaque": "#D4D5C9",
+  };
+
+  // BrickLink colors: [id, name, hex]. id drives the image URL, so these must match BrickLink's ids.
+  const BL_COLORS_LIST = [
+    [1, "White", "#FFFFFF"], [2, "Tan", "#E4CD9E"], [3, "Yellow", "#F2CD37"], [4, "Orange", "#FE8A18"],
+    [5, "Red", "#C91A09"], [6, "Green", "#237841"], [7, "Blue", "#0055BF"], [8, "Brown", "#583927"],
+    [9, "Light Gray", "#9BA19D"], [10, "Dark Gray", "#6D6E5C"], [11, "Black", "#05131D"],
+    [12, "Trans-Clear", "#FCFCFC"], [13, "Trans-Black", "#635F52"], [14, "Trans-Red", "#C91A09"],
+    [15, "Trans-Light Blue", "#AEEFEC"], [16, "Trans-Neon Green", "#DBFF5F"], [17, "Trans-Green", "#84B68D"],
+    [18, "Trans-Neon Orange", "#FF800D"], [19, "Trans-Yellow", "#F5CD2F"], [20, "Trans-Dark Blue", "#0020A0"],
+    [22, "Chrome Silver", "#E0E0E0"], [23, "Pink", "#FC97AC"], [24, "Purple", "#81007B"],
+    [25, "Light Orange", "#F8BB3D"], [26, "Magenta", "#923978"], [27, "Lime", "#BBE90B"],
+    [28, "Sand Green", "#A0BCAC"], [29, "Earth Orange", "#A95500"], [31, "Medium Orange", "#FFA70B"],
+    [32, "Dark Turquoise", "#008F9B"], [33, "Dark Blue", "#0A3463"], [34, "Dark Green", "#184632"],
+    [35, "Light Green", "#C2DAB8"], [36, "Dark Red", "#720E0F"], [38, "Dark Orange", "#A95500"],
+    [39, "Sand Blue", "#6074A1"], [41, "Sand Purple", "#845E84"], [42, "Medium Blue", "#5A93DB"],
+    [48, "Maersk Blue", "#3592C3"], [49, "Very Light Gray", "#E6E3DA"], [50, "Glow In Dark Opaque", "#D4D5C9"],
+    [58, "Sand Red", "#D67572"], [68, "Dark Purple", "#3F3691"], [69, "Dark Tan", "#958A73"],
+    [85, "Dark Bluish Gray", "#6C6E68"], [86, "Light Bluish Gray", "#A0A5A9"], [88, "Reddish Brown", "#582A12"],
+    [90, "Light Nougat", "#F6D7B3"], [95, "Flat Silver", "#898788"], [105, "Bright Light Blue", "#9FC3E9"],
+    [110, "Bright Light Orange", "#F8BB3D"], [120, "Bright Light Yellow", "#FFF03A"], [150, "Medium Nougat", "#AA7D55"],
+    [153, "Dark Azure", "#078BC9"], [156, "Medium Azure", "#36AEBF"], [158, "Coral", "#FF698F"],
+    [28, "Sand Green", "#A0BCAC"], [155, "Lavender", "#E1D5ED"], [157, "Yellowish Green", "#DFEEA5"],
+  ];
+  const BL_COLOR = {};          // id -> [name, hex]
+  const BL_NAME_ID = {};        // lowercase name -> id
+  const BL_NAME_PROPER = {};    // lowercase name -> proper name
+  BL_COLORS_LIST.forEach(([id, name, hex]) => {
+    BL_COLOR[id] = [name, hex];
+    const lo = name.toLowerCase();
+    if (BL_NAME_ID[lo] === undefined) { BL_NAME_ID[lo] = id; BL_NAME_PROPER[lo] = name; }
+  });
+  // color names sorted longest-first so "Trans-Neon Green" beats "Green" when matching a description prefix
+  const BL_COLOR_NAMES = Object.keys(BL_NAME_ID).sort((a, b) => b.length - a.length);
+
+  function norm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
+  function colorHexFromName(name) {
+    return COLOR_NAME_HEX[norm(name)] || null;
+  }
+
+  // ---- delimited (CSV/TSV) parsing with quote support ----
+  function splitLine(line, delim) {
+    const out = [];
+    let cur = "", inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQ) {
+        if (ch === '"') {
+          if (line[i + 1] === '"') { cur += '"'; i++; }
+          else inQ = false;
+        } else cur += ch;
+      } else if (ch === '"') inQ = true;
+      else if (ch === delim) { out.push(cur); cur = ""; }
+      else cur += ch;
+    }
+    out.push(cur);
+    return out.map((c) => c.trim());
+  }
+
+  function detectDelim(line) {
+    const counts = { ",": 0, "\t": 0, ";": 0 };
+    let inQ = false;
+    for (const ch of line) {
+      if (ch === '"') inQ = !inQ;
+      else if (!inQ && counts.hasOwnProperty(ch)) counts[ch]++;
+    }
+    let best = ",", n = -1;
+    for (const d in counts) if (counts[d] > n) { n = counts[d]; best = d; }
+    return n === 0 ? null : best; // null => single column
+  }
+
+  const HEADER_MAP = [
+    ["designid", ["designid", "designnum", "designnumber", "designno", "design"]],
+    ["elementid", ["elementid", "element", "elementno", "elementnum", "elementnumber", "legoelementid"]],
+    ["partnum", ["part", "partnum", "partnumber", "partno", "partid", "itemid", "blitemno", "legonumber", "legono"]],
+    ["name", ["name", "partname", "itemname", "elementname", "elementdescription", "description", "itemdescription", "desc", "title"]],
+    ["colorname", ["color", "colour", "colorname", "colourname", "ldrawcolor", "ldrawcolour"]],
+    ["colorid", ["colorid", "colourid", "blcolorid", "blcolourid", "ldrawcolorid"]],
+    ["hex", ["rgb", "hex", "colorhex", "colorrgb", "colourhex"]],
+    ["qty", ["qty", "quantity", "count", "need", "minqty", "amount", "numparts", "pieces"]],
+    ["img", ["img", "imgurl", "image", "imageurl", "partimgurl", "picture", "photo", "elementimage", "imageu"]],
+    ["category", ["category", "cat", "itemcategory", "partcategory", "type", "itemtype"]],
+  ];
+
+  function resolveHeaders(cells) {
+    const map = {};
+    let matched = 0;
+    cells.forEach((cell, idx) => {
+      const n = norm(cell);
+      for (const [field, syns] of HEADER_MAP) {
+        if (map[field] === undefined && syns.includes(n)) { map[field] = idx; matched++; break; }
+      }
+    });
+    return matched >= 1 ? map : null;
+  }
+
+  function parseDelimited(text) {
+    const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
+    if (!lines.length) return [];
+    const delim = detectDelim(lines[0]);
+
+    // single-column "Name xN" style
+    if (!delim) {
+      return lines.map((l) => {
+        const m = l.match(/[x×(]\s*(\d+)\s*\)?\s*$/i);
+        const qty = m ? parseInt(m[1], 10) : 1;
+        const name = (m ? l.slice(0, m.index) : l).replace(/[-–,:]\s*$/, "").trim();
+        return { name, qty };
+      }).filter((r) => r.name);
+    }
+
+    const rows = lines.map((l) => splitLine(l, delim));
+    const header = resolveHeaders(rows[0]);
+    const body = header ? rows.slice(1) : rows;
+
+    return body.map((cells) => {
+      if (header) {
+        const g = (f) => (header[f] !== undefined ? cells[header[f]] : "");
+        return { designId: g("designid"), elementId: g("elementid"), partNum: g("partnum"),
+                 name: g("name"), colorName: g("colorname"), colorId: g("colorid"),
+                 hex: g("hex"), qty: g("qty"), img: g("img"), category: g("category") };
+      }
+      // positional fallback
+      if (cells.length >= 4) return { partNum: cells[0], name: cells[1], colorName: cells[2], qty: cells[3] };
+      if (cells.length === 3) return { name: cells[0], colorName: cells[1], qty: cells[2] };
+      if (cells.length === 2) return { name: cells[0], qty: cells[1] };
+      return { name: cells[0], qty: 1 };
+    });
+  }
+
+  function parseBrickLinkXml(text) {
+    const doc = new DOMParser().parseFromString(text, "text/xml");
+    const items = [...doc.getElementsByTagName("ITEM")];
+    return items.map((it) => {
+      const get = (t) => { const e = it.getElementsByTagName(t)[0]; return e ? e.textContent.trim() : ""; };
+      return { partNum: get("ITEMID"), colorId: get("COLOR"),
+               qty: get("MINQTY") || get("QTY") || "1", name: get("ITEMNAME") };
+    });
+  }
+
+  function looksLikeXml(text) {
+    const t = text.trim();
+    return t.startsWith("<") && /<ITEM\b/i.test(t);
+  }
+
+  // ---- BrickLink inventory (pasted page text OR HTML source) ----
+  function looksLikeBrickLink(text) {
+    if (/idColor=\d+/i.test(text) || /catalogitem\.page\?P=/i.test(text) || /img\.bricklink\.com/i.test(text)) return true;
+    let hits = 0;
+    for (const l of text.split(/\r?\n/)) {
+      if (/^\s*(?:yes\s+|no\s+)?\d+\s+[A-Za-z]{0,4}\d[\w.\-]*\s+\S/i.test(l)) { if (++hits >= 3) return true; }
+    }
+    return false;
+  }
+
+  function decodeEntities(s) {
+    return String(s).replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ");
+  }
+
+  function blImageUrl(itemNo, colorId, isMinifig) {
+    if (isMinifig) return "https://img.bricklink.com/ItemImage/MN/0/" + encodeURIComponent(itemNo) + ".png";
+    if (colorId) return "https://img.bricklink.com/ItemImage/PN/" + colorId + "/" + encodeURIComponent(itemNo) + ".png";
+    return null;
+  }
+
+  function splitBLColor(desc) {
+    const low = desc.toLowerCase();
+    for (const name of BL_COLOR_NAMES) {
+      if (low.startsWith(name + " ")) return { colorName: BL_NAME_PROPER[name], rest: desc.slice(name.length).trim() };
+    }
+    return { colorName: "", rest: desc };
+  }
+
+  // build a normalized row {partNum,name,colorName,colorId,hex,qty,img} from a BrickLink line/entry
+  function blRow(qty, itemNo, descFull, colorId) {
+    let colorName = "", rest = descFull;
+    if (colorId && BL_COLOR[colorId]) {
+      colorName = BL_COLOR[colorId][0];
+      const pre = colorName.toLowerCase() + " ";
+      if (descFull.toLowerCase().startsWith(pre)) rest = descFull.slice(colorName.length).trim();
+    } else {
+      const sp = splitBLColor(descFull);
+      colorName = sp.colorName; rest = sp.rest;
+      if (colorName) colorId = BL_NAME_ID[colorName.toLowerCase()] || "";
+    }
+    const isMinifig = isMinifigId(itemNo) || (!colorName && !colorId && /^[a-z]{2}\d/i.test(itemNo));
+    const hex = (colorId && BL_COLOR[colorId] && BL_COLOR[colorId][1]) || colorHexFromName(colorName) || "";
+    return {
+      partNum: itemNo,
+      name: rest || itemNo,
+      colorName: colorName || (isMinifig ? "Minifigure" : ""),
+      colorId: colorId || "",
+      hex,
+      qty: qty || 1,
+      img: blImageUrl(itemNo, colorId, isMinifig),
+      isMinifig: !!isMinifig,
+    };
+  }
+
+  // Rich form: any content carrying the catalog item links (markdown export OR raw HTML source).
+  // These carry an exact idColor per item, so colors & images are always correct.
+  function scanRichBL(text) {
+    const rows = [];
+    let m;
+
+    // Parts:  <qty> [..](.../catalogitem.page?P=ITEM&idColor=CID) **Color + Description**
+    const reP = /(\d+)\s*\[[^\]]*\]\([^)]*?[?&]P=([^&)\s"']+)&(?:amp;)?idColor=(\d+)\)\s*(?:\*\*([^*]+)\*\*|<[^>]*>\s*([^<]+))/gi;
+    while ((m = reP.exec(text))) {
+      const desc = decodeEntities((m[4] || m[5] || "").trim());
+      if (desc) rows.push(blRow(parseInt(m[1], 10), decodeEntities(m[2]), desc, m[3]));
+    }
+
+    // Minifigs:  <qty> [..](.../catalogitem.page?M=ITEM) ...(Inv)... **Name**
+    const reM = /(\d+)\s*\[[^\]]*\]\([^)]*?[?&]M=([^&)\s"']+)\)[\s\S]*?(?:\*\*([^*]+)\*\*|<[^>]*>\s*([^<]+))/gi;
+    while ((m = reM.exec(text))) {
+      const name = decodeEntities((m[3] || m[4] || "").trim());
+      if (name) rows.push(blRow(parseInt(m[1], 10), decodeEntities(m[2]), name, ""));
+    }
+    return rows;
+  }
+
+  function parseBrickLink(text) {
+    // 1) richest form — catalog item links with exact idColor (markdown export or page HTML)
+    if (/catalogitem\.page\?[PM]=/i.test(text)) {
+      const rich = scanRichBL(text);
+      if (rich.length) return rich;
+    }
+
+    // 2) HTML <td> table form (parts + minifigs)
+    if (/idColor=\d+/i.test(text) || /catalogitem\.page\?M=/i.test(text)) {
+      const rows = [];
+      const reP = /(\d+)\s*<\/td>\s*<td[^>]*>\s*<a[^>]*[?&]P=([^&"'>\s]+)&(?:amp;)?idColor=(\d+)[^>]*>[^<]*<\/a>\s*<\/td>\s*<td[^>]*>([^<]*)</gi;
+      let m;
+      while ((m = reP.exec(text))) rows.push(blRow(parseInt(m[1], 10), decodeEntities(m[2]), decodeEntities(m[4]).trim(), m[3]));
+      const reM = /(\d+)\s*<\/td>\s*<td[^>]*>\s*<a[^>]*[?&]M=([^&"'>\s]+)[^>]*>[^<]*<\/a>[\s\S]*?<td[^>]*>([^<]*)</gi;
+      while ((m = reM.exec(text))) rows.push(blRow(parseInt(m[1], 10), decodeEntities(m[2]), decodeEntities(m[3]).trim(), ""));
+      if (rows.length) return rows;
+    }
+
+    // 3) plain visible text (copied straight off the BrickLink page)
+    const rows = [];
+    let inMinifigSection = false;
+    for (let raw of text.split(/\r?\n/)) {
+      let line = raw.replace(/\u00a0/g, " ").replace(/\t/g, " ").replace(/\s{2,}/g, " ").trim();
+      if (!line) continue;
+      if (/^minifigures?\s*:?\s*$/i.test(line)) { inMinifigSection = true; continue; }
+      if (/^parts?\s*:?\s*$/i.test(line)) { inMinifigSection = false; continue; }
+      if (/^(image|qty|item\s*no\.?|description|mid|regular items|extra items|counterparts|alternates|summary|type|unique lots|total qty|this set|sort items)/i.test(line)) continue;
+      line = line.replace(/^(yes|no)\s+/i, "");
+      const m = line.match(/^(\d+)\s+([A-Za-z]{0,5}\d[\w.\-]*)\s+(.+)$/);
+      if (!m) continue;
+      const desc = m[3].replace(/\s*\[?Catalog\]?\s*:.*$/i, "").trim();
+      const row = blRow(parseInt(m[1], 10), m[2], desc, "");
+      if (inMinifigSection || isMinifigId(m[2])) row.isMinifig = true;
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  // ---- turn raw parsed rows into the app's part objects, merging duplicates ----
+  function buildPartsFromRows(rows) {
+    const merged = new Map();
+    rows.forEach((r) => {
+      let need = parseInt(String(r.qty).replace(/[^\d]/g, ""), 10);
+      if (!need || need < 1) need = 1;
+
+      const designId = (r.designId || "").trim();
+      const elementId = (r.elementId || "").trim();
+      const genericPart = (r.partNum || "").trim();
+      const isMinifig = !!r.isMinifig || /minifig/i.test(r.category || "") ||
+        isMinifigId(designId) || isMinifigId(genericPart) || isMinifigId(elementId);
+
+      if (isMinifig) {
+        const partNum = minifigPartNum(genericPart || designId || elementId) || genericPart || "—";
+        const name = (r.name || "").trim() || ("Minifigure " + partNum);
+        if (partNum === "—" && name.indexOf("Minifigure") === 0) return;
+        let primary = (r.img || "").trim();
+        if (primary && !/^https?:\/\//i.test(primary)) primary = "";
+        const fallbacks = partNum !== "—"
+          ? ["https://img.bricklink.com/ItemImage/MN/0/" + encodeURIComponent(partNum) + ".png"]
+          : [];
+        const key = "mf|" + partNum;
+        if (merged.has(key)) {
+          merged.get(key).need += need;
+        } else {
+          merged.set(key, {
+            key: key + "|" + merged.size,
+            name, partNum, colorName: "Minifigure", colorHex: "#923978",
+            imgUrl: primary || fallbacks.shift() || null,
+            imgFallbacks: fallbacks,
+            need, found: 0, isMinifig: true,
+          });
+        }
+        return;
+      }
+
+      let colorName = (r.colorName || "").trim();
+      let hex = (r.hex || "").trim();
+      const colorId = (r.colorId || "").toString().trim();
+
+      if (!colorName && colorId && BL_COLOR[colorId]) colorName = BL_COLOR[colorId][0];
+      if (!colorName && colorId) colorName = "Color " + colorId;
+      if (!colorName) colorName = "Unknown";
+
+      if (hex && !hex.startsWith("#")) hex = "#" + hex;
+      if (!/^#([0-9a-f]{6}|[0-9a-f]{3})$/i.test(hex)) hex = "";
+      if (!hex) hex = colorHexFromName(colorName) || (colorId && BL_COLOR[colorId] ? BL_COLOR[colorId][1] : "") || "#9aa9c7";
+
+      const partNum = designId || genericPart || elementId || "—";
+      const name = (r.name || "").trim() || (partNum !== "—" ? "Part " + partNum : "Unknown part");
+      if (name === "Unknown part" && partNum === "—") return;
+
+      let primary = (r.img || "").trim();
+      if (primary && !/^https?:\/\//i.test(primary)) primary = "";
+      const fallbacks = [];
+      if (elementId && /^\d+$/.test(elementId))
+        fallbacks.push("https://www.lego.com/cdn/product-assets/element.img.lod5photo.192x192/" + elementId + ".jpg");
+      const blId = (colorId && BL_COLOR[colorId]) ? colorId : (BL_NAME_ID[colorName.toLowerCase()] || "");
+      const blPart = designId || genericPart;
+      if (blPart && blId)
+        fallbacks.push("https://img.bricklink.com/ItemImage/PN/" + blId + "/" + encodeURIComponent(blPart) + ".png");
+
+      const key = partNum + "|" + colorName;
+      if (merged.has(key)) {
+        merged.get(key).need += need;
+      } else {
+        merged.set(key, {
+          key: key + "|" + merged.size,
+          name, partNum, colorName, colorHex: hex,
+          imgUrl: primary || fallbacks.shift() || null,
+          imgFallbacks: fallbacks,
+          need, found: 0, isMinifig: false,
+        });
+      }
+    });
+    return [...merged.values()];
+  }
+
+  function buildChecklist() {
+    const text = els.importText.value;
+    if (!text.trim()) { importMsg("Paste a parts list or upload a file first.", "err"); return; }
+
+    let rows;
+    try {
+      if (looksLikeXml(text)) rows = parseBrickLinkXml(text);
+      else if (looksLikeBrickLink(text)) rows = parseBrickLink(text);
+      else rows = parseDelimited(text);
+    } catch (e) {
+      importMsg("Couldn't parse that — check the format. (" + e.message + ")", "err");
+      return;
+    }
+
+    const parts = buildPartsFromRows(rows);
+    if (!parts.length) { importMsg("No parts found in that list. Need at least a name/part and a quantity.", "err"); return; }
+
+    const mf = parts.filter((p) => p.isMinifig).length;
+    const label = els.importSetName.value.trim() || "Imported parts list";
+    const setNum = "import_" + (norm(label) || "list");
+    const totalPieces = parts.reduce((s, p) => s + p.need, 0);
+
+    applyLoadedSet(setNum, { name: label, year: null, num: label, imgUrl: null, numParts: totalPieces }, parts);
+    els.importPanel.classList.remove("show");
+    importMsg(
+      "Loaded " + parts.length + " line items" + (mf ? " (incl. " + mf + " minifig" + (mf > 1 ? "s" : "") + ")" : "") + ".",
+      "ok"
+    );
+    hideStatus();
+  }
+
+  function importMsg(msg, type) {
+    els.importMsg.textContent = msg;
+    els.importMsg.className = "import-msg " + (type || "");
+  }
+
+  function readImportFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      els.importText.value = reader.result;
+      els.fileDropText.textContent = "Loaded: " + file.name;
+      if (!els.importSetName.value.trim())
+        els.importSetName.value = file.name.replace(/\.(csv|tsv|txt|xml)$/i, "");
+      importMsg("File loaded — press Build Checklist.", "ok");
+    };
+    reader.readAsText(file);
+  }
+
+  // Real BrickLink-style sample (set 6829-1) so part images load straight away
+  const SAMPLE_IMPORT =
+    "1 3004 Black Brick 1 x 2\n" +
+    "1 3003 Black Brick 2 x 2\n" +
+    "1 4345 Black Container, Box 2 x 2 x 2\n" +
+    "2 3475b Black Engine, Smooth Small, 1 x 2 Side Plate with Axle Holders\n" +
+    "2 2433 Black Hinge Bar with 3 Fingers and End Stud (Control Lever)\n" +
+    "1 3020 Black Plate 2 x 4\n" +
+    "3 3034 Black Plate 2 x 8\n" +
+    "2 2412b Black Tile, Modified 1 x 2 Grille with Bottom Groove\n" +
+    "4 6118 Black Wheel Hard Plastic Small (22mm D. x 24mm)\n" +
+    "1 3007 Light Gray Brick 2 x 8\n" +
+    "2 6232 Light Gray Brick, Modified 2 x 2 with Pin and Axle Hole\n" +
+    "1 6249 Light Gray Brick, Modified 2 x 4 with Pins\n" +
+    "1 30118 Light Gray Wing Plate Bi-level 8 x 4 and 2 x 3 1/3 Up\n" +
+    "1 3004 Red Brick 1 x 2\n" +
+    "4 3023 Red Plate 1 x 2\n" +
+    "1 3021 Red Plate 2 x 3\n" +
+    "2 2569 Trans-Neon Green Antenna Whip 8H\n" +
+    "6 3062 Trans-Neon Green Brick, Round 1 x 1\n" +
+    "1 2466 Trans-Neon Green Panel 3 x 2 x 6\n" +
+    "1 sp043 UFO Droid - Blue (Techdroid 1)\n";
+
+  // ---- import event wiring ----
+  els.importBtn.addEventListener("click", () => {
+    const showing = els.importPanel.classList.toggle("show");
+    if (showing) els.importPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  els.importClose.addEventListener("click", () => els.importPanel.classList.remove("show"));
+  els.buildBtn.addEventListener("click", buildChecklist);
+  els.loadSampleBtn.addEventListener("click", () => {
+    els.importText.value = SAMPLE_IMPORT;
+    els.importSetName.value = "6829-1 — Radon Rover";
+    importMsg("BrickLink sample pasted — press Build Checklist.", "ok");
+  });
+  els.importFile.addEventListener("change", (e) => readImportFile(e.target.files[0]));
+  els.fileDrop.addEventListener("dragover", (e) => { e.preventDefault(); els.fileDrop.classList.add("drag"); });
+  els.fileDrop.addEventListener("dragleave", () => els.fileDrop.classList.remove("drag"));
+  els.fileDrop.addEventListener("drop", (e) => {
+    e.preventDefault();
+    els.fileDrop.classList.remove("drag");
+    readImportFile(e.dataTransfer.files[0]);
+  });
+
+  // start an empty checklist that you fill in by hand
+  els.blankBtn.addEventListener("click", () => {
+    const label = els.importSetName.value.trim() || "My manual list";
+    const setNum = "manual_" + (norm(label) || "list");
+    applyLoadedSet(setNum, { name: label, year: null, num: label, imgUrl: null, numParts: 0 }, []);
+    els.importPanel.classList.remove("show");
+    els.addPartPanel.classList.add("show");
+    els.apName.focus();
+  });
+
+  // ---- manual add-part backup ----
+  function addManualPart() {
+    const name = els.apName.value.trim();
+    if (!name) { els.apName.focus(); return; }
+    if (!state.setNum) return;
+    const colorName = els.apColor.value.trim() || "Custom";
+    let need = parseInt(els.apQty.value, 10);
+    if (!need || need < 1) need = 1;
+    let img = els.apImg.value.trim();
+    if (img && !/^https?:\/\//i.test(img)) img = "";
+
+    const part = {
+      key: "manual|" + name + "|" + colorName,
+      name, partNum: "—", colorName,
+      colorHex: colorHexFromName(colorName) || "#9aa9c7",
+      imgUrl: img || null, imgFallbacks: [], need, found: 0, manual: true,
+    };
+    state.parts.push(part);
+    saveManual();
+    render();
+    // clear for the next entry, keep panel open for rapid adds
+    els.apName.value = ""; els.apColor.value = ""; els.apImg.value = ""; els.apQty.value = "1";
+    els.apName.focus();
+  }
+  els.addPartBtn.addEventListener("click", () => {
+    if (!state.setNum) return;
+    const showing = els.addPartPanel.classList.toggle("show");
+    if (showing) els.apName.focus();
+  });
+  els.apAdd.addEventListener("click", addManualPart);
+  els.apClose.addEventListener("click", () => els.addPartPanel.classList.remove("show"));
+  [els.apName, els.apColor, els.apImg, els.apQty].forEach((el) =>
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter") addManualPart(); }));
+
+  // ---------- Init ----------
+  loadKey();
+})();
+</script>
+</body>
+</html>
