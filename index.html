@@ -660,6 +660,7 @@
     overflow: hidden;
   }
   .part-num { font-size: 12px; color: var(--muted); }
+  .part-num .mf-of { color: #b06bff; font-weight: 600; font-size: 11px; }
   .color-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
   .swatch {
     width: 16px; height: 16px;
@@ -731,6 +732,37 @@
     z-index: 1;
   }
   .card.minifig.done::after { top: 40px; }
+  .card.minifig-part { border-color: rgba(146,57,120,.38); }
+  .card.minifig-part::before {
+    content: "↳ " attr(data-mf);
+    position: absolute;
+    top: 12px; left: 12px;
+    background: rgba(146,57,120,.85);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .5px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    z-index: 1;
+    max-width: calc(100% - 90px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .card.minifig-part.done::after { top: 40px; }
+  .part-out-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+    flex: 1 1 280px;
+  }
+  .part-out-opt input { margin-top: 3px; cursor: pointer; flex-shrink: 0; }
+  .part-out-opt .hint { display: block; font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 2px; }
 
   .empty {
     grid-column: 1 / -1;
@@ -1273,6 +1305,10 @@ sw0001,Luke Skywalker,1,Minifigures</code>
     </div>
 
     <div class="setup-footer">
+      <label class="part-out-opt" title="Uses Rebrickable to split each minifig into head, torso, legs, etc.">
+        <input type="checkbox" id="partOutMinifigs" checked />
+        <span>Part out minifigs <span class="hint">Show head, torso, legs &amp; accessories separately</span></span>
+      </label>
       <button type="button" class="btn ghost" id="demoBtn">▶ Try Radon Rover demo</button>
       <p class="setup-footer-note">Set 6829-1 — real parts list with BrickLink photos. No key or import needed.</p>
     </div>
@@ -1451,15 +1487,17 @@ sw0001,Luke Skywalker,1,Minifigures</code>
     session: { startMs: null, found: 0, events: [], paused: false, pauseStartMs: null, accumulatedPauseMs: 0 },
     value: { low: 0, high: 0 }, // used market value range of the complete set ($)
     drops: 0, // times a piece hit the floor this set
+    partOutMinifigs: true,
   };
 
   const API = "https://rebrickable.com/api/v3/lego";
+  const PART_OUT_KEY = "excavation_part_out_minifigs";
 
   // ---------- Elements ----------
   const $ = (id) => document.getElementById(id);
   const els = {
     setNumber: $("setNumber"), apiKey: $("apiKey"), keyPill: $("keyPill"),
-    loadBtn: $("loadBtn"), demoBtn: $("demoBtn"),
+    loadBtn: $("loadBtn"), demoBtn: $("demoBtn"), partOutMinifigs: $("partOutMinifigs"),
     status: $("status"),
     setHead: $("setHead"), setImg: $("setImg"), setName: $("setName"), setSub: $("setSub"),
     statTotal: $("statTotal"), statUnique: $("statUnique"), statFound: $("statFound"), statRemain: $("statRemain"),
@@ -1652,6 +1690,123 @@ sw0001,Luke Skywalker,1,Minifigures</code>
     return fetchAllPages("/sets/" + encodeURIComponent(setNum) + "/minifigs/?page_size=1000");
   }
 
+  function partFromRebrickableInventoryRow(r, opts) {
+    opts = opts || {};
+    const partNum = r.part.part_num;
+    const colorId = r.color.id;
+    const qty = (r.quantity || 1) * (opts.minifigQty || 1);
+    const key = opts.keySuffix
+      ? "mfp_" + opts.keySuffix + "_" + partNum + "_" + colorId
+      : partNum + "_" + colorId + "_" + (r.element_id || "");
+    const baseName = r.part.name || "Unknown part";
+    return {
+      key: key,
+      name: opts.minifigOf ? baseName : baseName,
+      partNum: partNum,
+      colorName: r.color.name || "—",
+      colorHex: r.color.rgb ? "#" + r.color.rgb : "#bbbbbb",
+      imgUrl: r.part.part_img_url || null,
+      imgFallbacks: [],
+      need: qty,
+      found: 0,
+      isMinifig: false,
+      isMinifigPart: !!opts.minifigOf,
+      minifigOf: opts.minifigOf || null,
+      minifigOfName: opts.minifigOfName || null,
+    };
+  }
+
+  // Known minifig breakdowns (BrickLink inventory) — used when API unavailable (e.g. demo)
+  const MINIFIG_COMPONENTS = {
+    sp043: [
+      { partNum: "3626px79", name: "Head Alien, Blue Eye Mask & Red Dot", colorName: "Blue", colorHex: "#0055BF", blColorId: "7" },
+      { partNum: "970c00pb0021", name: "Hips & Legs, UFO Gold Circuitry", colorName: "Black", colorHex: "#05131D", blColorId: "11" },
+      { partNum: "973px132c01", name: "Torso UFO Circuitry / Blue Arms", colorName: "Light Gray", colorHex: "#9BA19D", blColorId: "9" },
+    ],
+  };
+
+  function partsFromMinifigCatalog(whole, catalog) {
+    return catalog.map((c, idx) => {
+      const blPart = c.partNum.replace(/\(Inv\)$/i, "");
+      const fallbacks = [];
+      if (c.blColorId) fallbacks.push("https://img.bricklink.com/ItemImage/PN/" + c.blColorId + "/" + encodeURIComponent(blPart) + ".png");
+      fallbacks.push("https://img.bricklink.com/ItemImage/PN/0/" + encodeURIComponent(blPart) + ".png");
+      return {
+        key: "mfp_" + whole.partNum + "_" + idx + "_" + blPart,
+        name: c.name,
+        partNum: blPart,
+        colorName: c.colorName,
+        colorHex: c.colorHex,
+        imgUrl: null,
+        imgFallbacks: fallbacks,
+        need: whole.need,
+        found: 0,
+        isMinifig: false,
+        isMinifigPart: true,
+        minifigOf: whole.partNum,
+        minifigOfName: whole.name,
+      };
+    });
+  }
+
+  async function resolveMinifigComponents(whole) {
+    if (els.apiKey.value.trim()) {
+      try {
+        const rows = await fetchMinifigPartsList(whole.partNum);
+        if (rows.length) {
+          return rows.map((r, idx) => partFromRebrickableInventoryRow(r, {
+            minifigQty: whole.need,
+            minifigOf: whole.partNum,
+            minifigOfName: whole.name,
+            keySuffix: whole.partNum + "_" + idx,
+          }));
+        }
+      } catch (e) {
+        if (e.message !== "NOT_FOUND" && e.message !== "NO_KEY" && e.message !== "BAD_KEY") throw e;
+      }
+    }
+    const catalog = MINIFIG_COMPONENTS[minifigPartNum(whole.partNum).toLowerCase()];
+    if (catalog) return partsFromMinifigCatalog(whole, catalog);
+    return null;
+  }
+
+  async function fetchMinifigPartsList(minifigNum) {
+    const base = minifigPartNum(minifigNum);
+    const candidates = [];
+    if (minifigNum) candidates.push(String(minifigNum).trim());
+    if (base && base !== minifigNum) candidates.push(base);
+    if (base && !/-\d+$/.test(base)) candidates.push(base + "-1");
+    const tried = new Set();
+    for (const num of candidates) {
+      if (!num || tried.has(num)) continue;
+      tried.add(num);
+      try {
+        const items = await fetchAllPages("/minifigs/" + encodeURIComponent(num) + "/parts/?page_size=1000");
+        if (items.length) return items;
+      } catch (e) {
+        if (e.message !== "NOT_FOUND") throw e;
+      }
+    }
+    return [];
+  }
+
+  function syncPartOutPref() {
+    if (els.partOutMinifigs) state.partOutMinifigs = els.partOutMinifigs.checked;
+  }
+
+  async function expandMinifigParts(parts) {
+    syncPartOutPref();
+    if (!state.partOutMinifigs) return parts;
+    const out = [];
+    for (const p of parts) {
+      if (!p.isMinifig) { out.push(p); continue; }
+      const expanded = await resolveMinifigComponents(p);
+      if (expanded && expanded.length) out.push(...expanded);
+      else out.push(p);
+    }
+    return out;
+  }
+
   function isMinifigId(id) {
     // Minifig numbers start with letters (sp043, sw0001) — not plain part numbers like 3001
     return /^[a-z]{2,5}\d{3,}[a-z]?$/i.test(String(id || "").trim());
@@ -1704,20 +1859,16 @@ sw0001,Luke Skywalker,1,Minifigures</code>
 
       const parts = rawParts
         .filter((r) => !r.is_spare)
-        .map((r) => ({
-          key: r.part.part_num + "_" + r.color.id + "_" + (r.element_id || ""),
-          name: r.part.name || "Unknown part",
-          partNum: r.part.part_num,
-          colorName: r.color.name || "—",
-          colorHex: r.color.rgb ? "#" + r.color.rgb : "#bbbbbb",
-          imgUrl: r.part.part_img_url || null,
-          imgFallbacks: [],
-          need: r.quantity || 1,
-          found: 0,
-          isMinifig: false,
-        }));
+        .map((r) => partFromRebrickableInventoryRow(r));
 
-      const minifigs = rawMinifigs.map(partFromRebrickableMinifig);
+      let minifigs = rawMinifigs.map(partFromRebrickableMinifig);
+      const mfCount = minifigs.length;
+      syncPartOutPref();
+      if (mfCount && state.partOutMinifigs) {
+        showStatus('<span class="spinner"></span> &nbsp;Parting out <b>' + mfCount + "</b> minifig" + (mfCount > 1 ? "s" : "") + "…", "info");
+        minifigs = await expandMinifigParts(minifigs);
+      }
+
       const all = parts.concat(minifigs);
 
       if (!all.length) { showStatus("No parts found for <b>" + setNum + "</b>.", "err"); return; }
@@ -1729,8 +1880,11 @@ sw0001,Luke Skywalker,1,Minifigures</code>
         imgUrl: info.set_img_url,
         numParts: info.num_parts,
       }, all);
-      if (minifigs.length) {
-        showStatus("Loaded <b>" + parts.length + "</b> parts + <b>" + minifigs.length + "</b> minifig" + (minifigs.length > 1 ? "s" : "") + ".", "info");
+      if (mfCount) {
+        const mfMsg = state.partOutMinifigs && minifigs.some((p) => p.isMinifigPart)
+          ? "Loaded <b>" + parts.length + "</b> parts + <b>" + minifigs.length + "</b> minifig pieces (parted out)."
+          : "Loaded <b>" + parts.length + "</b> parts + <b>" + mfCount + "</b> minifig" + (mfCount > 1 ? "s" : "") + ".";
+        showStatus(mfMsg, "info");
         setTimeout(hideStatus, 3200);
       } else {
         hideStatus();
@@ -1778,11 +1932,16 @@ sw0001,Luke Skywalker,1,Minifigures</code>
     "1 sp043 UFO Droid - Blue (Techdroid 1)\n";
 
   // ---------- Demo set (Radon Rover — real parts + BrickLink photos) ----------
-  function loadDemo() {
-    const parts = buildPartsFromRows(parseBrickLink(RADON_ROVER_IMPORT));
+  async function loadDemo() {
+    let parts = buildPartsFromRows(parseBrickLink(RADON_ROVER_IMPORT));
     if (!parts.length) {
       showStatus("Couldn't load the Radon Rover demo.", "err");
       return;
+    }
+    syncPartOutPref();
+    if (state.partOutMinifigs && parts.some((p) => p.isMinifig)) {
+      showStatus('<span class="spinner"></span> &nbsp;Parting out minifigs…', "info");
+      parts = await expandMinifigParts(parts);
     }
     const totalPieces = parts.reduce((s, p) => s + p.need, 0);
     applyLoadedSet(DEMO_SET_NUM, {
@@ -1864,7 +2023,7 @@ sw0001,Luke Skywalker,1,Minifigures</code>
       const done = p.found >= p.need;
       if (state.filter === "remaining" && done) return false;
       if (state.filter === "found" && !done) return false;
-      if (state.filter === "minifigs" && !p.isMinifig) return false;
+      if (state.filter === "minifigs" && !p.isMinifig && !p.isMinifigPart) return false;
       if (q) {
         const hay = (p.name + " " + p.partNum + " " + p.colorName).toLowerCase();
         if (!hay.includes(q)) return false;
@@ -1903,9 +2062,9 @@ sw0001,Luke Skywalker,1,Minifigures</code>
 
     const list = visibleParts();
     const uniqueDone = state.parts.filter((p) => p.found >= p.need).length;
-    const mfTotal = state.parts.filter((p) => p.isMinifig).length;
+    const mfLines = state.parts.filter((p) => p.isMinifig || p.isMinifigPart).length;
     els.countReadout.textContent = "Showing " + list.length + " of " + state.parts.length + " types · " + uniqueDone + " complete" +
-      (mfTotal ? " · " + mfTotal + " minifig" + (mfTotal > 1 ? "s" : "") : "");
+      (mfLines ? " · " + mfLines + " minifig" + (mfLines > 1 ? " lines" : " line") : "");
 
     els.grid.innerHTML = "";
     if (!list.length) {
@@ -1926,7 +2085,8 @@ sw0001,Luke Skywalker,1,Minifigures</code>
   function cardEl(p) {
     const done = p.found >= p.need;
     const card = document.createElement("div");
-    card.className = "card" + (p.isMinifig ? " minifig" : "") + (done ? " done" : "");
+    card.className = "card" + (p.isMinifig ? " minifig" : "") + (p.isMinifigPart ? " minifig-part" : "") + (done ? " done" : "");
+    if (p.isMinifigPart && p.minifigOf) card.dataset.mf = p.minifigOf;
 
     const img = document.createElement("img");
     img.className = "part-img";
@@ -1947,7 +2107,8 @@ sw0001,Luke Skywalker,1,Minifigures</code>
     info.className = "part-info";
     info.innerHTML =
       '<div class="part-name">' + esc(p.name) + "</div>" +
-      '<div class="part-num">' + (p.isMinifig ? "Minifig #" : "Part #") + esc(p.partNum) + "</div>";
+      '<div class="part-num">' + (p.isMinifig ? "Minifig #" : "Part #") + esc(p.partNum) +
+      (p.isMinifigPart && p.minifigOf ? ' <span class="mf-of">· ' + esc(p.minifigOf) + "</span>" : "") + "</div>";
 
     const colorRow = document.createElement("div");
     colorRow.className = "color-row";
@@ -2635,7 +2796,7 @@ sw0001,Luke Skywalker,1,Minifigures</code>
     return [...merged.values()];
   }
 
-  function buildChecklist() {
+  async function buildChecklist() {
     const text = els.importText.value;
     if (!text.trim()) { importMsg("Paste a parts list or upload a file first.", "err"); return; }
 
@@ -2649,17 +2810,23 @@ sw0001,Luke Skywalker,1,Minifigures</code>
       return;
     }
 
-    const parts = buildPartsFromRows(rows);
+    let parts = buildPartsFromRows(rows);
     if (!parts.length) { importMsg("No parts found in that list. Need at least a name/part and a quantity.", "err"); return; }
 
-    const mf = parts.filter((p) => p.isMinifig).length;
+    syncPartOutPref();
+    if (state.partOutMinifigs && parts.some((p) => p.isMinifig)) {
+      importMsg("Parting out minifigs…", "ok");
+      parts = await expandMinifigParts(parts);
+    }
+
+    const mfLines = parts.filter((p) => p.isMinifig || p.isMinifigPart).length;
     const label = els.importSetName.value.trim() || "Imported parts list";
     const setNum = "import_" + (norm(label) || "list");
     const totalPieces = parts.reduce((s, p) => s + p.need, 0);
 
     applyLoadedSet(setNum, { name: label, year: null, num: label, imgUrl: null, numParts: totalPieces }, parts);
     importMsg(
-      "Loaded " + parts.length + " line items" + (mf ? " (incl. " + mf + " minifig" + (mf > 1 ? "s" : "") + ")" : "") + ".",
+      "Loaded " + parts.length + " line items" + (mfLines ? " (incl. " + mfLines + " minifig" + (mfLines > 1 ? " lines" : " line") + ")" : "") + ".",
       "ok"
     );
     hideStatus();
@@ -2744,6 +2911,14 @@ sw0001,Luke Skywalker,1,Minifigures</code>
 
   // ---------- Init ----------
   loadKey();
+  state.partOutMinifigs = localStorage.getItem(PART_OUT_KEY) !== "0";
+  if (els.partOutMinifigs) {
+    els.partOutMinifigs.checked = state.partOutMinifigs;
+    els.partOutMinifigs.addEventListener("change", () => {
+      state.partOutMinifigs = els.partOutMinifigs.checked;
+      localStorage.setItem(PART_OUT_KEY, state.partOutMinifigs ? "1" : "0");
+    });
+  }
 })();
 </script>
 </body>
