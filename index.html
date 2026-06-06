@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Project Excavation. Free LEGO Set Sorting Tracker</title>
-<meta name="description" content="Project Excavation is a free LEGO set sorting tracker from Build Beyond Belief. Load a parts list, tick off every brick as you dig it out of the pile — built for rebuilders and live streams." />
+<meta name="description" content="Project Excavation is a free LEGO set sorting tracker from Build Beyond Belief. Type a set number — Rebrickable loads part photos, colours, minifigs, and the set image. Tick off every brick as you dig it out of the pile." />
 <meta name="author" content="Build Beyond Belief" />
 <style>
   :root {
@@ -82,20 +82,11 @@
     color: var(--muted);
   }
   .welcome-step b { display: block; color: var(--text); font-size: 14px; margin-bottom: 4px; }
+  .welcome-step.featured {
+    border-color: rgba(255,207,43,.45);
+    background: linear-gradient(135deg, rgba(255,207,43,.1), rgba(74,163,255,.06));
+  }
   .welcome-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
-
-  .setup-advanced {
-    margin-top: 14px;
-    border-top: 1px solid var(--line);
-    padding-top: 14px;
-  }
-  .setup-advanced summary {
-    cursor: pointer;
-    color: var(--blue);
-    font-weight: 700;
-    font-size: 13.5px;
-    margin-bottom: 12px;
-  }
 
   /* ---------- Header ---------- */
   header.topbar {
@@ -162,11 +153,70 @@
     padding: 20px;
     margin-bottom: 18px;
   }
+  .setup-primary { margin-bottom: 0; }
+  .setup-lead { margin-bottom: 14px; }
+  .setup-lead h3 {
+    margin: 0 0 8px;
+    font-size: 19px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .setup-blurb {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+    max-width: 820px;
+  }
+  .setup-blurb b { color: var(--text); }
+  .api-benefits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .api-benefit {
+    background: #0e1730;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: center;
+  }
   .setup-row {
     display: flex;
     gap: 14px;
     flex-wrap: wrap;
     align-items: flex-end;
+  }
+  .setup-alt {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .setup-alt-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .setup-alt-head > span {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+  .setup-alt-note {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
   }
   .field { display: flex; flex-direction: column; gap: 6px; }
   .field label {
@@ -236,6 +286,11 @@
     padding: 4px 10px;
     border-radius: 999px;
     text-transform: uppercase;
+  }
+  .pill.rec {
+    background: rgba(56,211,159,.18);
+    color: var(--green);
+    border: 1px solid rgba(56,211,159,.35);
   }
   .pill.ok { background: rgba(56,211,159,.15); color: var(--green); }
   .pill.off { background: rgba(154,169,199,.15); color: var(--muted); }
@@ -982,29 +1037,41 @@
   <section class="panel welcome">
     <h2>Rebuilding a set from a mixed brick pile?</h2>
     <p>
-      Load your set's parts list, then tick off each piece as you find it — with photos, colours, minifigs, live stats,
-      and a pause button for bio breaks. No account. Progress saves in your browser.
+      Type your set number — Rebrickable fills in every part with <b>photos</b>, exact <b>colours</b>, <b>minifigs</b>, and the <b>set image</b>.
+      Then tick off each piece as you find it. Live stats, pause timer, drop counter. No account — progress saves in your browser.
     </p>
     <div class="welcome-cta">
-      <button class="btn" id="welcomeDemo">▶ Try the demo</button>
+      <button class="btn" id="welcomeLoad">🔍 Load a set by number</button>
       <button class="btn ghost" id="welcomeImport">📋 Import a parts list</button>
+      <button class="btn ghost" id="welcomeDemo">▶ Try the demo</button>
     </div>
     <div class="welcome-steps">
-      <div class="welcome-step"><b>1 · Get your list</b>Paste from BrickLink, upload a Brickset CSV, or use a free Rebrickable key.</div>
+      <div class="welcome-step featured"><b>1 · Load from Rebrickable</b>Type a set number + free API key → part photos, colour swatches, minifigs, set header image. No copy-paste.</div>
       <div class="welcome-step"><b>2 · Dig &amp; tick</b>Each card is one part type. Hit + every time you fish one out of the pile.</div>
       <div class="welcome-step"><b>3 · Watch the bar move</b>Progress, pace, value, and drop counter stay pinned while you scroll.</div>
     </div>
   </section>
 
   <!-- Setup -->
-  <section class="panel setup">
-    <div class="setup-row">
-      <button class="btn" id="importBtn">📋 Import parts list</button>
-      <button class="btn ghost" id="demoBtn">▶ Try demo set</button>
-    </div>
-    <details class="setup-advanced">
-      <summary>Load by set number (Rebrickable API — optional)</summary>
-      <div class="setup-row" style="margin-top:12px">
+  <section class="panel setup" id="setupPanel">
+    <div class="setup-primary">
+      <div class="setup-lead">
+        <h3>🔍 Load from Rebrickable <span class="pill rec">recommended</span></h3>
+        <p class="setup-blurb">
+          Enter a set number and your free API key — the full checklist loads automatically with
+          <b>part photos</b>, <b>exact colour swatches</b>, <b>minifigs</b>, the <b>set header image</b>, year, and piece count.
+          Spare parts are filtered out. One number, done.
+        </p>
+      </div>
+      <div class="api-benefits">
+        <div class="api-benefit">📷 Part photos</div>
+        <div class="api-benefit">🎨 Exact colours</div>
+        <div class="api-benefit">🧑 Minifigs included</div>
+        <div class="api-benefit">🖼️ Set header image</div>
+        <div class="api-benefit">⚡ Just a set number</div>
+        <div class="api-benefit">🧹 Spares filtered</div>
+      </div>
+      <div class="setup-row">
         <div class="field">
           <label for="setNumber">LEGO set number</label>
           <input type="text" id="setNumber" placeholder="e.g. 75192" autocomplete="off" />
@@ -1017,23 +1084,34 @@
         </div>
       </div>
       <div class="api-note">
-        <span>Free key from</span>
+        <span>Free key (takes ~2 min) from</span>
         <a href="https://rebrickable.com/api/" target="_blank" rel="noopener">rebrickable.com/api</a>
-        <span>— or skip this entirely and <b>import a parts list</b> instead.</span>
+        <span>— saved only in this browser, never uploaded.</span>
       </div>
-    </details>
+    </div>
+    <div class="setup-alt">
+      <div class="setup-alt-head">
+        <span>Without a key</span>
+        <button class="btn ghost" id="importBtn">📋 Import / paste / upload</button>
+        <button class="btn ghost" id="demoBtn">▶ Try demo set</button>
+      </div>
+      <p class="setup-alt-note">
+        Paste from BrickLink, upload a Brickset CSV, or build your own list — works fine, but part photos and set images depend on what you bring.
+      </p>
+    </div>
   </section>
 
-  <!-- Import (no API key) -->
+  <!-- Import (fallback when no API key) -->
   <section class="panel import-panel" id="importPanel">
     <div class="import-head">
       <h3>📋 Import your parts list</h3>
       <button class="btn ghost import-close" id="importClose" title="Close">✕</button>
     </div>
     <p class="import-intro">
-      <b>Best for BrickLink:</b> open a set's inventory page (e.g.
-      <code>bricklink.com/catalogItemInv.asp?S=6829-1</code>), select all (<b>Ctrl/Cmd+A</b>), copy, and paste below.
-      Part <b>images</b>, color, qty &amp; description are rebuilt automatically. Also accepts <b>CSV</b>,
+      <b>Fallback when you don't have a Rebrickable key.</b> For the full experience — part photos, set image, minifigs, exact colours — use
+      <b>Load from Rebrickable</b> above instead. Import still works great for BrickLink paste:
+      open a set's inventory page (e.g. <code>bricklink.com/catalogItemInv.asp?S=6829-1</code>), select all (<b>Ctrl/Cmd+A</b>), copy, and paste below.
+      BrickLink rows rebuild color, qty &amp; description automatically (images when available). Also accepts <b>CSV</b>,
       <b>tab-separated</b>, and <b>BrickLink XML</b>. Not sure? Hit <b>Paste BrickLink sample</b>.
     </p>
     <div class="import-grid">
@@ -1074,7 +1152,8 @@
           <li><b>Image</b> — <code>img</code>, <code>img_url</code> (optional)</li>
         </ul>
         <p>No header? The app assumes <code>part, name, color, quantity</code> by position. Lines like <code>Brick 2 x 4 x6</code> also work.</p>
-        <p><b>Where to get a list without a key:</b> a set's page on Rebrickable or BrickLink, the back of newer instruction booklets, or any spreadsheet you build yourself.</p>
+        <p><b>Prefer photos &amp; set images?</b> A free Rebrickable API key (see above) loads everything from just a set number — no paste required.</p>
+        <p><b>Where to get a list to import:</b> a set's page on Rebrickable or BrickLink, the back of newer instruction booklets, or any spreadsheet you build yourself.</p>
       </div>
     </details>
   </section>
@@ -1506,7 +1585,7 @@
     const setNum = normalizeSetNum(els.setNumber.value);
     if (!setNum) { showStatus("Type a set number first — e.g. <b>75192</b>.", "err"); return; }
     if (!els.apiKey.value.trim()) {
-      showStatus("No API key yet. Add a free key from <a href='https://rebrickable.com/api/' target='_blank'>rebrickable.com/api</a>, or press <b>Try Demo Set</b>.", "err");
+      showStatus("No API key yet — add a free one from <a href='https://rebrickable.com/api/' target='_blank'>rebrickable.com/api</a> for part photos, colours &amp; minifigs. Or <b>import a parts list</b> below.", "err");
       return;
     }
     showStatus('<span class="spinner"></span> &nbsp;Loading set <b>' + setNum + "</b>…", "info");
@@ -1561,7 +1640,7 @@
 
   function handleError(e, setNum) {
     if (e.message === "NO_KEY")
-      showStatus("Add your free Rebrickable API key first, or press <b>Try Demo Set</b>.", "err");
+      showStatus("Add your free Rebrickable API key for the full experience (photos, colours, minifigs), or <b>import a parts list</b> instead.", "err");
     else if (e.message === "BAD_KEY")
       showStatus("That API key was rejected. Double-check it at <a href='https://rebrickable.com/api/' target='_blank'>rebrickable.com/api</a>.", "err");
     else if (e.message === "NOT_FOUND")
@@ -2077,9 +2156,15 @@
   }
 
   // ---------- Events ----------
+  function scrollToSetup(focusKey) {
+    $("setupPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+    if (focusKey) setTimeout(() => (focusKey === "api" ? els.apiKey : els.setNumber).focus(), 400);
+  }
+
   els.loadBtn.addEventListener("click", loadSet);
   els.demoBtn.addEventListener("click", loadDemo);
   $("welcomeDemo").addEventListener("click", loadDemo);
+  $("welcomeLoad").addEventListener("click", () => scrollToSetup("set"));
   $("welcomeImport").addEventListener("click", () => {
     els.importPanel.classList.add("show");
     els.importPanel.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2120,7 +2205,7 @@
   });
 
   // ===================================================================
-  //  IMPORT (no API key)
+  //  IMPORT (fallback — no API key)
   // ===================================================================
 
   // LEGO color name -> hex (so a plain "color name" column still looks right)
