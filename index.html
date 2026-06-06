@@ -153,24 +153,40 @@
     padding: 20px;
     margin-bottom: 18px;
   }
-  .setup-primary { margin-bottom: 0; }
-  .setup-lead { margin-bottom: 14px; }
-  .setup-lead h3 {
-    margin: 0 0 8px;
-    font-size: 19px;
+  .load-tabs {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0;
   }
-  .setup-blurb {
-    margin: 0;
+  .load-tab {
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 10px 16px 12px;
+    margin-bottom: -1px;
+    transition: color .15s, border-color .15s;
+  }
+  .load-tab:hover { color: var(--text); }
+  .load-tab.active {
+    color: var(--text);
+    border-bottom-color: var(--brand);
+  }
+  .load-pane { display: none; }
+  .load-pane.active { display: block; }
+  .pane-intro {
+    margin: 0 0 16px;
     color: var(--muted);
     font-size: 14px;
     line-height: 1.55;
     max-width: 820px;
   }
-  .setup-blurb b { color: var(--text); }
+  .pane-intro b { color: var(--text); }
   .api-benefits {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
@@ -193,30 +209,87 @@
     flex-wrap: wrap;
     align-items: flex-end;
   }
-  .setup-alt {
+  .tab-crosslink {
+    margin: 16px 0 0;
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .tab-crosslink button {
+    background: none;
+    border: none;
+    color: var(--blue);
+    cursor: pointer;
+    font-size: inherit;
+    font-weight: 700;
+    padding: 0;
+    text-decoration: underline;
+  }
+  .tab-crosslink button:hover { color: var(--text); }
+  .setup-footer {
     margin-top: 18px;
     padding-top: 16px;
     border-top: 1px solid var(--line);
-  }
-  .setup-alt-head {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
   }
-  .setup-alt-head > span {
+  .setup-footer-note {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+  }
+  .format-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .format-card {
+    background: #0e1730;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .format-card h4 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .format-card code, .format-example {
+    display: block;
+    background: #0d1426;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 11.5px;
+    color: var(--brand);
+    margin: 8px 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-family: "Consolas", "SF Mono", ui-monospace, monospace;
+  }
+  .format-card .format-src {
+    margin: 6px 0 0;
+    font-size: 12px;
+    font-style: italic;
+  }
+  .format-card .format-cols {
+    margin: 6px 0 0;
+    padding-left: 16px;
+  }
+  .format-card .format-cols li { margin: 2px 0; }
+  .format-head {
+    margin: 18px 0 0;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: .5px;
     text-transform: uppercase;
     color: var(--muted);
-    margin-right: 4px;
-  }
-  .setup-alt-note {
-    margin: 10px 0 0;
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.5;
   }
   .field { display: flex; flex-direction: column; gap: 6px; }
   .field label {
@@ -970,14 +1043,8 @@
     line-height: 1.5;
   }
 
-  /* ---------- Import panel ---------- */
-  .import-panel { display: none; padding: 20px; margin-bottom: 18px; }
-  .import-panel.show { display: block; }
-  .import-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .import-head h3 { margin: 0; font-size: 19px; }
-  .import-close { padding: 6px 12px; font-size: 14px; }
-  .import-intro { color: var(--muted); font-size: 13.5px; margin: 0 0 16px; line-height: 1.5; }
-  .import-intro b, .import-help b { color: var(--text); }
+  /* ---------- Import (inside load tab) ---------- */
+  .import-intro b { color: var(--text); }
   .import-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
   .import-grid .field { width: 100%; }
   #importSetName { width: 100%; }
@@ -999,20 +1066,13 @@
   .import-msg { font-size: 13.5px; font-weight: 600; }
   .import-msg.err { color: #ff8a80; }
   .import-msg.ok { color: var(--green); }
-  .import-help { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
-  .import-help summary { cursor: pointer; color: var(--blue); font-weight: 700; font-size: 13.5px; }
-  .import-help-body { color: var(--muted); font-size: 13px; line-height: 1.6; margin-top: 10px; }
-  .import-help-body ul { margin: 6px 0; padding-left: 18px; }
-  .import-help-body code {
-    background: #0d1426; border: 1px solid var(--line); border-radius: 5px;
-    padding: 1px 6px; font-size: 12px; color: var(--brand);
-  }
-
   @media (max-width: 600px) {
     .tagline { display: none; }
     #setNumber, #apiKey, .toolbar input[type="text"] { width: 100%; }
     .field { flex: 1; }
     .import-grid { grid-template-columns: 1fr; }
+    .load-tab { font-size: 13.5px; padding: 8px 12px 10px; }
+    .format-cards { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -1037,32 +1097,34 @@
   <section class="panel welcome">
     <h2>Rebuilding a set from a mixed brick pile?</h2>
     <p>
-      Type your set number — Rebrickable fills in every part with <b>photos</b>, exact <b>colours</b>, <b>minifigs</b>, and the <b>set image</b>.
-      Then tick off each piece as you find it. Live stats, pause timer, drop counter. No account — progress saves in your browser.
+      Pick how you want to load your parts list — <b>by set number</b> (best photos &amp; colours) or <b>import a CSV / paste from BrickLink</b>.
+      Then tick off each piece as you find it. No account — progress saves in your browser.
     </p>
     <div class="welcome-cta">
-      <button class="btn" id="welcomeLoad">🔍 Load a set by number</button>
-      <button class="btn ghost" id="welcomeImport">📋 Import a parts list</button>
+      <button class="btn" id="welcomeLoad">🔍 Load by set number</button>
+      <button class="btn ghost" id="welcomeImport">📋 Import a list</button>
       <button class="btn ghost" id="welcomeDemo">▶ Try the demo</button>
     </div>
     <div class="welcome-steps">
-      <div class="welcome-step featured"><b>1 · Load from Rebrickable</b>Type a set number + free API key → part photos, colour swatches, minifigs, set header image. No copy-paste.</div>
+      <div class="welcome-step"><b>1 · Choose your path</b>Rebrickable API for photos &amp; minifigs, or paste/upload a list — you only need one.</div>
       <div class="welcome-step"><b>2 · Dig &amp; tick</b>Each card is one part type. Hit + every time you fish one out of the pile.</div>
       <div class="welcome-step"><b>3 · Watch the bar move</b>Progress, pace, value, and drop counter stay pinned while you scroll.</div>
     </div>
   </section>
 
-  <!-- Setup -->
+  <!-- Setup: tabbed load paths -->
   <section class="panel setup" id="setupPanel">
-    <div class="setup-primary">
-      <div class="setup-lead">
-        <h3>🔍 Load from Rebrickable <span class="pill rec">recommended</span></h3>
-        <p class="setup-blurb">
-          Enter a set number and your free API key — the full checklist loads automatically with
-          <b>part photos</b>, <b>exact colour swatches</b>, <b>minifigs</b>, the <b>set header image</b>, year, and piece count.
-          Spare parts are filtered out. One number, done.
-        </p>
-      </div>
+    <div class="load-tabs" role="tablist">
+      <button class="load-tab active" id="tabApi" role="tab" aria-selected="true" aria-controls="paneApi" data-tab="api">🔍 By set number</button>
+      <button class="load-tab" id="tabImport" role="tab" aria-selected="false" aria-controls="paneImport" data-tab="import">📋 Import a list</button>
+    </div>
+
+    <!-- API pane -->
+    <div class="load-pane active" id="paneApi" role="tabpanel" aria-labelledby="tabApi">
+      <p class="pane-intro">
+        Type a set number and a free Rebrickable API key — the checklist loads with
+        <b>part photos</b>, <b>exact colours</b>, <b>minifigs</b>, and the <b>set image</b>. Spares filtered out automatically.
+      </p>
       <div class="api-benefits">
         <div class="api-benefit">📷 Part photos</div>
         <div class="api-benefit">🎨 Exact colours</div>
@@ -1088,74 +1150,83 @@
         <a href="https://rebrickable.com/api/" target="_blank" rel="noopener">rebrickable.com/api</a>
         <span>— saved only in this browser, never uploaded.</span>
       </div>
+      <p class="tab-crosslink">No API key? Don't want one? That's fine — <button type="button" id="gotoImport">switch to Import a list</button> and paste from BrickLink or upload a CSV.</p>
     </div>
-    <div class="setup-alt">
-      <div class="setup-alt-head">
-        <span>Without a key</span>
-        <button class="btn ghost" id="importBtn">📋 Import / paste / upload</button>
-        <button class="btn ghost" id="demoBtn">▶ Try demo set</button>
-      </div>
-      <p class="setup-alt-note">
-        Paste from BrickLink, upload a Brickset CSV, or build your own list — works fine, but part photos and set images depend on what you bring.
-      </p>
-    </div>
-  </section>
 
-  <!-- Import (fallback when no API key) -->
-  <section class="panel import-panel" id="importPanel">
-    <div class="import-head">
-      <h3>📋 Import your parts list</h3>
-      <button class="btn ghost import-close" id="importClose" title="Close">✕</button>
-    </div>
-    <p class="import-intro">
-      <b>Fallback when you don't have a Rebrickable key.</b> For the full experience — part photos, set image, minifigs, exact colours — use
-      <b>Load from Rebrickable</b> above instead. Import still works great for BrickLink paste:
-      open a set's inventory page (e.g. <code>bricklink.com/catalogItemInv.asp?S=6829-1</code>), select all (<b>Ctrl/Cmd+A</b>), copy, and paste below.
-      BrickLink rows rebuild color, qty &amp; description automatically (images when available). Also accepts <b>CSV</b>,
-      <b>tab-separated</b>, and <b>BrickLink XML</b>. Not sure? Hit <b>Paste BrickLink sample</b>.
-    </p>
-    <div class="import-grid">
+    <!-- Import pane -->
+    <div class="load-pane" id="paneImport" role="tabpanel" aria-labelledby="tabImport">
+      <p class="pane-intro import-intro">
+        <b>No API key? Don't want to get one?</b> That's completely fine. Paste a BrickLink inventory, upload a Brickset CSV, or bring your own spreadsheet — only this tab is needed.
+      </p>
+      <div class="import-grid">
+        <div class="field">
+          <label for="importSetName">Set name / number <span class="hint">(used as the title &amp; to save progress)</span></label>
+          <input type="text" id="importSetName" placeholder="e.g. 75192 — Millennium Falcon" autocomplete="off" />
+        </div>
+        <div class="field import-file-field">
+          <label>Upload a file</label>
+          <label class="file-drop" id="fileDrop">
+            <input type="file" id="importFile" accept=".csv,.tsv,.txt,.xml" hidden />
+            <span id="fileDropText">Click to choose, or drag &amp; drop a .csv / .xml here</span>
+          </label>
+        </div>
+      </div>
       <div class="field">
-        <label for="importSetName">Set name / number <span class="hint">(used as the title &amp; to save progress)</span></label>
-        <input type="text" id="importSetName" placeholder="e.g. 75192 — Millennium Falcon" autocomplete="off" />
+        <label for="importText">Paste your parts list here</label>
+        <textarea id="importText" rows="8" placeholder="Part,Color,Quantity&#10;3001,Bright Red,6&#10;3023,White,10&#10;&#10;(headers optional — see supported formats below)"></textarea>
       </div>
-      <div class="field import-file-field">
-        <label>Upload a file</label>
-        <label class="file-drop" id="fileDrop">
-          <input type="file" id="importFile" accept=".csv,.tsv,.txt,.xml" hidden />
-          <span id="fileDropText">Click to choose, or drag &amp; drop a .csv / .xml here</span>
-        </label>
+      <div class="import-actions">
+        <button class="btn" id="buildBtn">✅ Build Checklist</button>
+        <button class="btn ghost" id="blankBtn">🧱 Start blank list (add by hand)</button>
+        <button class="btn ghost" id="loadSampleBtn">Paste BrickLink sample</button>
+        <span class="import-msg" id="importMsg"></span>
       </div>
-    </div>
-    <div class="field">
-      <label for="importText">…or paste your parts list here</label>
-      <textarea id="importText" rows="8" placeholder="Part,Color,Quantity&#10;3001,Bright Red,6&#10;3023,White,10&#10;&#10;(headers optional — name/part, color, and quantity in any order)"></textarea>
-    </div>
-    <div class="import-actions">
-      <button class="btn" id="buildBtn">✅ Build Checklist</button>
-      <button class="btn ghost" id="blankBtn">🧱 Start blank list (add by hand)</button>
-      <button class="btn ghost" id="loadSampleBtn">Paste BrickLink sample</button>
-      <span class="import-msg" id="importMsg"></span>
-    </div>
-    <details class="import-help">
-      <summary>Which columns / formats are supported?</summary>
-      <div class="import-help-body">
-        <p><b>BrickLink:</b> paste the full inventory (parts <b>and</b> the Minifigures section) — rows look like <code>1 3004 Black Brick 1 x 2</code> or <code>1 sp043 UFO Droid…</code>. Minifigs get a purple <b>MINIFIG</b> badge.</p>
-        <p><b>CSV (Brickset etc.):</b> if a <code>Category</code> column says Minifigures, those rows are picked up automatically.</p>
-        <p><b>CSV / spreadsheet:</b> give a header row and the app maps these (any order, case-insensitive):</p>
-        <ul>
-          <li><b>Quantity</b> — <code>qty</code>, <code>quantity</code>, <code>count</code>, <code>need</code>, <code>minqty</code></li>
-          <li><b>Part name</b> — <code>name</code>, <code>part name</code>, <code>description</code></li>
-          <li><b>Part number</b> — <code>part</code>, <code>part_num</code>, <code>itemid</code>, <code>blitemno</code></li>
-          <li><b>Color</b> — <code>color</code>, <code>colour</code>, <code>color name</code> (names like “Bright Red” get auto-colored)</li>
-          <li><b>Color hex</b> — <code>rgb</code>, <code>hex</code> (optional, e.g. <code>C91A09</code>)</li>
-          <li><b>Image</b> — <code>img</code>, <code>img_url</code> (optional)</li>
-        </ul>
-        <p>No header? The app assumes <code>part, name, color, quantity</code> by position. Lines like <code>Brick 2 x 4 x6</code> also work.</p>
-        <p><b>Prefer photos &amp; set images?</b> A free Rebrickable API key (see above) loads everything from just a set number — no paste required.</p>
-        <p><b>Where to get a list to import:</b> a set's page on Rebrickable or BrickLink, the back of newer instruction booklets, or any spreadsheet you build yourself.</p>
+
+      <div class="format-head">Supported formats — pick one</div>
+      <div class="format-cards">
+        <div class="format-card">
+          <h4>📋 BrickLink paste</h4>
+          <p>Open a set's <b>Item Inventory</b>, select all (<b>Ctrl/Cmd+A</b>), copy, paste above. Include the Minifigures section too.</p>
+          <code>1 3004 Black Brick 1 x 2
+1 sp043 UFO Droid - Blue…</code>
+          <p class="format-src">Get it: BrickLink → set page → Item Inventory</p>
+        </div>
+        <div class="format-card">
+          <h4>📊 Brickset CSV</h4>
+          <p>Export a set's parts list from Brickset. Minifigs are auto-detected when <code>Category</code> says Minifigures.</p>
+          <code>Part,Color,Quantity,Category
+3001,Bright Red,6,Parts
+sw0001,Luke Skywalker,1,Minifigures</code>
+          <p class="format-src">Get it: Brickset → set → Export → CSV</p>
+        </div>
+        <div class="format-card">
+          <h4>📝 Your own CSV / spreadsheet</h4>
+          <p>Add a header row — columns can be in any order. Only <b>quantity</b> and a <b>part name or number</b> are required.</p>
+          <ul class="format-cols">
+            <li><b>Qty</b> — <code>qty</code>, <code>quantity</code>, <code>count</code>, <code>need</code></li>
+            <li><b>Name</b> — <code>name</code>, <code>description</code>, <code>part name</code></li>
+            <li><b>Part #</b> — <code>part</code>, <code>part_num</code>, <code>itemid</code></li>
+            <li><b>Colour</b> — <code>color</code>, <code>colour</code> (auto-swatched)</li>
+            <li><b>Hex</b> — <code>rgb</code>, <code>hex</code> (optional)</li>
+            <li><b>Image</b> — <code>img</code>, <code>img_url</code> (optional)</li>
+          </ul>
+          <p class="format-src">No header? Assumes <code>part, name, color, quantity</code> by position.</p>
+        </div>
+        <div class="format-card">
+          <h4>📄 BrickLink XML &amp; plain text</h4>
+          <p>Upload a <code>.xml</code> inventory export, or tab-separated rows. Lines like <code>Brick 2 x 4 x6</code> work without headers.</p>
+          <code>Part&#9;Color&#9;Quantity
+3001&#9;Bright Red&#9;6</code>
+          <p class="format-src">Also: instruction booklet lists, Rebrickable copy-paste, your own notes</p>
+        </div>
       </div>
-    </details>
+      <p class="tab-crosslink">Want part photos &amp; set images automatically? <button type="button" id="gotoApi">switch to By set number</button> — free Rebrickable key, ~2 min setup.</p>
+    </div>
+
+    <div class="setup-footer">
+      <button class="btn ghost" id="demoBtn">▶ Try demo set</button>
+      <p class="setup-footer-note">Not sure yet? Load a sample set with no key or import needed.</p>
+    </div>
   </section>
 
   <div class="status" id="status"></div>
@@ -1372,7 +1443,6 @@
     valueLow: $("valueLow"), valueHigh: $("valueHigh"), priceLink: $("priceLink"),
     addPartBtn: $("addPartBtn"), addPartPanel: $("addPartPanel"), apName: $("apName"), apColor: $("apColor"),
     apQty: $("apQty"), apImg: $("apImg"), apAdd: $("apAdd"), apClose: $("apClose"), blankBtn: $("blankBtn"),
-    importBtn: $("importBtn"), importPanel: $("importPanel"), importClose: $("importClose"),
     importSetName: $("importSetName"), importFile: $("importFile"), fileDrop: $("fileDrop"), fileDropText: $("fileDropText"),
     importText: $("importText"), buildBtn: $("buildBtn"), loadSampleBtn: $("loadSampleBtn"), importMsg: $("importMsg"),
   };
@@ -1585,7 +1655,7 @@
     const setNum = normalizeSetNum(els.setNumber.value);
     if (!setNum) { showStatus("Type a set number first — e.g. <b>75192</b>.", "err"); return; }
     if (!els.apiKey.value.trim()) {
-      showStatus("No API key yet — add a free one from <a href='https://rebrickable.com/api/' target='_blank'>rebrickable.com/api</a> for part photos, colours &amp; minifigs. Or <b>import a parts list</b> below.", "err");
+      showStatus("No API key yet — add a free one from <a href='https://rebrickable.com/api/' target='_blank'>rebrickable.com/api</a>, or switch to <b>Import a list</b> (no key needed).", "err");
       return;
     }
     showStatus('<span class="spinner"></span> &nbsp;Loading set <b>' + setNum + "</b>…", "info");
@@ -1640,7 +1710,7 @@
 
   function handleError(e, setNum) {
     if (e.message === "NO_KEY")
-      showStatus("Add your free Rebrickable API key for the full experience (photos, colours, minifigs), or <b>import a parts list</b> instead.", "err");
+      showStatus("Add your free Rebrickable API key, or switch to the <b>Import a list</b> tab — no key required.", "err");
     else if (e.message === "BAD_KEY")
       showStatus("That API key was rejected. Double-check it at <a href='https://rebrickable.com/api/' target='_blank'>rebrickable.com/api</a>.", "err");
     else if (e.message === "NOT_FOUND")
@@ -2156,19 +2226,36 @@
   }
 
   // ---------- Events ----------
-  function scrollToSetup(focusKey) {
-    $("setupPanel").scrollIntoView({ behavior: "smooth", block: "start" });
-    if (focusKey) setTimeout(() => (focusKey === "api" ? els.apiKey : els.setNumber).focus(), 400);
+  function switchLoadTab(tab, focus) {
+    const isApi = tab === "api";
+    $("tabApi").classList.toggle("active", isApi);
+    $("tabImport").classList.toggle("active", !isApi);
+    $("paneApi").classList.toggle("active", isApi);
+    $("paneImport").classList.toggle("active", !isApi);
+    $("tabApi").setAttribute("aria-selected", isApi ? "true" : "false");
+    $("tabImport").setAttribute("aria-selected", isApi ? "false" : "true");
+    if (focus) {
+      const el = focus === "api" ? els.apiKey : focus === "import" ? els.importText : els.setNumber;
+      setTimeout(() => el.focus(), 300);
+    }
   }
+
+  function scrollToSetup(tab, focus) {
+    $("setupPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+    switchLoadTab(tab || "api", focus);
+  }
+
+  document.querySelectorAll(".load-tab").forEach((btn) => {
+    btn.addEventListener("click", () => switchLoadTab(btn.dataset.tab));
+  });
+  $("gotoImport").addEventListener("click", () => switchLoadTab("import", "import"));
+  $("gotoApi").addEventListener("click", () => switchLoadTab("api", "set"));
 
   els.loadBtn.addEventListener("click", loadSet);
   els.demoBtn.addEventListener("click", loadDemo);
   $("welcomeDemo").addEventListener("click", loadDemo);
-  $("welcomeLoad").addEventListener("click", () => scrollToSetup("set"));
-  $("welcomeImport").addEventListener("click", () => {
-    els.importPanel.classList.add("show");
-    els.importPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
+  $("welcomeLoad").addEventListener("click", () => scrollToSetup("api", "set"));
+  $("welcomeImport").addEventListener("click", () => scrollToSetup("import", "import"));
   els.setNumber.addEventListener("keydown", (e) => { if (e.key === "Enter") loadSet(); });
 
   els.search.addEventListener("input", () => { state.search = els.search.value; render(); });
@@ -2597,7 +2684,6 @@
     const totalPieces = parts.reduce((s, p) => s + p.need, 0);
 
     applyLoadedSet(setNum, { name: label, year: null, num: label, imgUrl: null, numParts: totalPieces }, parts);
-    els.importPanel.classList.remove("show");
     importMsg(
       "Loaded " + parts.length + " line items" + (mf ? " (incl. " + mf + " minifig" + (mf > 1 ? "s" : "") + ")" : "") + ".",
       "ok"
@@ -2647,11 +2733,6 @@
     "1 sp043 UFO Droid - Blue (Techdroid 1)\n";
 
   // ---- import event wiring ----
-  els.importBtn.addEventListener("click", () => {
-    const showing = els.importPanel.classList.toggle("show");
-    if (showing) els.importPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-  els.importClose.addEventListener("click", () => els.importPanel.classList.remove("show"));
   els.buildBtn.addEventListener("click", buildChecklist);
   els.loadSampleBtn.addEventListener("click", () => {
     els.importText.value = SAMPLE_IMPORT;
@@ -2672,7 +2753,6 @@
     const label = els.importSetName.value.trim() || "My manual list";
     const setNum = "manual_" + (norm(label) || "list");
     applyLoadedSet(setNum, { name: label, year: null, num: label, imgUrl: null, numParts: 0 }, []);
-    els.importPanel.classList.remove("show");
     els.addPartPanel.classList.add("show");
     els.apName.focus();
   });
