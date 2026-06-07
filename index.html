@@ -14,6 +14,17 @@
 <title>Brick Excavation — Free LEGO Set Sorting Tracker</title>
 <meta name="description" content="Brick Excavation is a free LEGO set sorting tracker from Build Beyond Belief. Type a set number — Rebrickable loads part photos, colours, minifigs, and the set image. Tick off every brick as you dig it out of the pile." />
 <meta name="author" content="Build Beyond Belief" />
+<meta property="og:title" content="Brick Excavation. Free LEGO Set Sorting Tracker">
+<meta property="og:description" content="A free LEGO set sorting tracker. Load a set or import a parts list, then tick off every brick as you dig it out of the pile. No account — progress saves in your browser. Published by Build Beyond Belief.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://excavation.buildbeyondbelief.com/">
+<meta property="og:image" content="https://excavation.buildbeyondbelief.com/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Brick Excavation. Free LEGO Set Sorting Tracker">
+<meta name="twitter:description" content="A free LEGO set sorting tracker. Tick off every brick as you dig it out of the pile. Published by Build Beyond Belief.">
+<meta name="twitter:image" content="https://excavation.buildbeyondbelief.com/assets/og-cover.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 <style>
   :root {
@@ -1177,18 +1188,58 @@
     box-shadow: 0 0 8px rgba(45,143,78,.35);
   }
   @media (max-width: 720px) {
-    .hud-inner { flex-wrap: wrap; }
-    .hud-set {
-      width: 100%;
+    .sticky-hud {
+      top: 0;
+      margin-bottom: 10px;
+      border-radius: 0 0 12px 12px;
+    }
+    .hud-inner { flex-wrap: nowrap; }
+    .hud-set { display: none; }
+    .hud-stats { padding: 8px 10px 6px; gap: 6px; }
+    .hud-headline {
+      flex: 1 1 100%;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
       min-width: 0;
       border-right: none;
       border-bottom: 1px solid var(--line);
-      padding: 12px;
+      padding: 0 0 6px;
+      margin-bottom: 0;
     }
-    .hud-set-img { width: 100%; max-width: 200px; height: 96px; margin: 0 auto; }
-    .hud-headline { border-right: none; border-bottom: 1px solid var(--line); padding-bottom: 8px; flex: 1 1 100%; }
-    .hud-pct { font-size: 30px; }
-    .hud-cell .hud-val { font-size: 20px; }
+    .hud-title {
+      font-size: 15px;
+      -webkit-line-clamp: 1;
+      flex: 1;
+      min-width: 0;
+    }
+    .hud-pct { font-size: 26px; flex-shrink: 0; }
+    .hud-row {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 8px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      padding-bottom: 2px;
+    }
+    .hud-cell,
+    .hud-drop,
+    .hud-pause {
+      flex: 0 0 auto;
+      min-width: 72px;
+      padding: 8px 10px;
+    }
+    .hud-cell .hud-lbl { font-size: 9px; letter-spacing: .8px; }
+    .hud-cell .hud-val { font-size: 17px; }
+    .hud-cell.hud-value .hud-val,
+    .hud-cell.hud-rate .hud-val { font-size: 15px; }
+    .hud-drop .drop-count { font-size: 20px; }
+    .hud-drop .drop-ico { font-size: 18px; }
+    .hud-pause .pause-ico { font-size: 20px; }
+  }
+  @media (max-width: 480px) {
+    .hud-row-2 { display: none; }
   }
 
   /* ---------- Found toast ---------- */
