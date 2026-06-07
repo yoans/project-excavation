@@ -1,28 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
+<script>
+(function () {
+  var p = localStorage.getItem("excavation_theme") || "light";
+  document.documentElement.dataset.themePref = p;
+  if (p === "dark" || (p === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches))
+    document.documentElement.setAttribute("data-theme", "dark");
+})();
+</script>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Project Excavation. Free LEGO Set Sorting Tracker</title>
-<meta name="description" content="Project Excavation is a free LEGO set sorting tracker from Build Beyond Belief. Type a set number — Rebrickable loads part photos, colours, minifigs, and the set image. Tick off every brick as you dig it out of the pile." />
+<title>Brick Excavation — Free LEGO Set Sorting Tracker</title>
+<meta name="description" content="Brick Excavation is a free LEGO set sorting tracker from Build Beyond Belief. Type a set number — Rebrickable loads part photos, colours, minifigs, and the set image. Tick off every brick as you dig it out of the pile." />
 <meta name="author" content="Build Beyond Belief" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
 <style>
   :root {
+    --bg: #fff4d6;
+    --bg-2: #ffe9a8;
+    --panel: #ffffff;
+    --panel-2: #fff9eb;
+    --surface: #fff0c8;
+    --surface-2: #ffeab5;
+    --elevated: #ffffff;
+    --input-bg: #ffffff;
+    --line: #1a1a1a;
+    --text: #1a1a1a;
+    --muted: #5c5c5c;
+    --brand: #ffd500;
+    --btn-top: #ffe566;
+    --btn-bottom: #ffd500;
+    --btn-text: var(--text);
+    --brand-2: #d91010;
+    --brick-red: #d91010;
+    --brick-blue: #0055bf;
+    --green: #2d8f4e;
+    --green-deep: #1e6b38;
+    --blue: #0055bf;
+    --red: #d91010;
+    --radius: 14px;
+    --shadow: 0 4px 0 #1a1a1a, 0 8px 24px rgba(0,0,0,.12);
+    --hud-bg: linear-gradient(180deg, rgba(255,255,255,.97), rgba(255,249,235,.97));
+    --hud-set-bg: linear-gradient(145deg, #fff 0%, #e8ecf4 100%);
+    --spinner-track: rgba(0,0,0,.1);
+    color-scheme: light;
+  }
+
+  html[data-theme="dark"] {
     --bg: #0e1424;
     --bg-2: #131c33;
     --panel: #16203a;
     --panel-2: #1d294a;
-    --line: #2b3a5e;
+    --surface: #0e1730;
+    --surface-2: #0d1426;
+    --elevated: #1a2544;
+    --input-bg: #0d1426;
+    --line: #3a4d78;
     --text: #eef3ff;
     --muted: #9aa9c7;
-    --brand: #ffcf2b;
-    --brand-2: #ff5a3c;
+    --shadow: 0 8px 28px rgba(0,0,0,.45);
     --green: #38d39f;
     --green-deep: #14a877;
     --blue: #4aa3ff;
-    --red: #e8443b;
-    --radius: 16px;
-    --shadow: 0 12px 40px rgba(0,0,0,.45);
+    --hud-bg: linear-gradient(180deg, rgba(29,41,74,.97), rgba(22,32,58,.97));
+    --hud-set-bg: linear-gradient(145deg, #1a2544 0%, #0e1730 100%);
+    --spinner-track: rgba(255,255,255,.12);
+    --btn-text: #1a1a1a;
+    color-scheme: dark;
+  }
+
+  html[data-theme="dark"] body {
+    background:
+      radial-gradient(900px 500px at 88% -5%, rgba(74,163,255,.14), transparent 55%),
+      radial-gradient(800px 500px at -5% 105%, rgba(217,16,16,.1), transparent 50%),
+      var(--bg);
+  }
+  html[data-theme="dark"] .bbb-strip {
+    background: linear-gradient(90deg, rgba(255,213,0,.12), rgba(74,163,255,.1));
+  }
+  html[data-theme="dark"] .status.err {
+    background: rgba(232,68,59,.12);
+    border-color: rgba(232,68,59,.4);
+    color: #ffb4ae;
+  }
+  html[data-theme="dark"] .status.info {
+    background: rgba(74,163,255,.12);
+    border-color: rgba(74,163,255,.35);
+    color: #bfe0ff;
+  }
+  html[data-theme="dark"] .hero-perk:nth-child(3n+1) { background: rgba(255,213,0,.15); }
+  html[data-theme="dark"] .hero-perk:nth-child(3n+2) { background: rgba(74,163,255,.15); color: var(--blue); }
+  html[data-theme="dark"] .hero-perk:nth-child(3n) { background: rgba(217,16,16,.15); color: #ff8a80; }
+  html[data-theme="dark"] .welcome-step.featured {
+    background: linear-gradient(135deg, rgba(255,213,0,.1), rgba(74,163,255,.08));
+  }
+  html[data-theme="dark"] .footer-bbb {
+    background: linear-gradient(135deg, rgba(255,213,0,.08), rgba(74,163,255,.08));
   }
 
   * { box-sizing: border-box; }
@@ -31,8 +105,8 @@
     margin: 0;
     padding: 0;
     background:
-      radial-gradient(1200px 700px at 85% -10%, rgba(74,163,255,.18), transparent 60%),
-      radial-gradient(1000px 600px at -10% 110%, rgba(255,90,60,.14), transparent 55%),
+      radial-gradient(900px 500px at 88% -5%, rgba(0,85,191,.1), transparent 55%),
+      radial-gradient(800px 500px at -5% 105%, rgba(217,16,16,.08), transparent 50%),
       var(--bg);
     color: var(--text);
     font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
@@ -47,8 +121,8 @@
 
   /* ---------- Build Beyond Belief strip ---------- */
   .bbb-strip {
-    background: linear-gradient(90deg, rgba(99,102,241,.12), rgba(6,182,212,.08));
-    border-bottom: 1px solid var(--line);
+    background: linear-gradient(90deg, rgba(255,213,0,.35), rgba(0,85,191,.12));
+    border-bottom: 2px solid var(--line);
     padding: 10px 22px;
     text-align: center;
     font-size: 13px;
@@ -59,23 +133,104 @@
   .bbb-strip a:hover { text-decoration: underline; }
   .bbb-strip strong { color: var(--text); font-weight: 700; }
 
-  /* ---------- Welcome ---------- */
+  /* ---------- Hero / welcome ---------- */
   .welcome {
-    padding: 22px 24px;
+    padding: 0;
     margin-bottom: 18px;
     line-height: 1.55;
+    overflow: hidden;
   }
-  .welcome h2 { margin: 0 0 10px; font-size: 20px; }
-  .welcome p { margin: 0 0 14px; color: var(--muted); font-size: 14.5px; max-width: 720px; }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) 1fr;
+    gap: 8px 28px;
+    align-items: center;
+    padding: 24px 28px 20px;
+  }
+  .hero-art {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-art-frame {
+    width: 100%;
+    max-width: 280px;
+    padding: 14px;
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    box-shadow: 0 4px 0 var(--line);
+  }
+  .hero-img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .hero-copy { min-width: 0; }
+  .hero-eyebrow {
+    display: inline-block;
+    margin: 0 0 12px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 2px solid var(--line);
+    background: var(--brand);
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #1a1a1a;
+  }
+  .hero-title {
+    margin: 0 0 14px;
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -.5px;
+  }
+  .hero-title .word-red { color: var(--brick-red); }
+  .hero-title .word-blue { color: var(--brick-blue); }
+  .hero-lead {
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    max-width: 560px;
+  }
+  .hero-sub {
+    margin: 0 0 18px;
+    color: var(--muted);
+    font-size: 14.5px;
+    max-width: 560px;
+  }
+  .hero-perks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 28px 22px;
+    border-bottom: 2px dashed var(--line);
+  }
+  .hero-perk {
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 2px solid var(--line);
+    background: var(--elevated);
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .hero-perk:nth-child(3n+1) { background: rgba(255,213,0,.35); }
+  .hero-perk:nth-child(3n+2) { background: rgba(0,85,191,.1); color: var(--brick-blue); }
+  .hero-perk:nth-child(3n) { background: rgba(217,16,16,.08); color: var(--brick-red); }
   .welcome-steps {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 12px;
-    margin-top: 16px;
+    padding: 20px 28px 24px;
   }
   .welcome-step {
-    background: #0e1730;
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 2px solid var(--line);
     border-radius: 12px;
     padding: 14px 16px;
     font-size: 13.5px;
@@ -83,14 +238,13 @@
   }
   .welcome-step b { display: block; color: var(--text); font-size: 14px; margin-bottom: 4px; }
   .welcome-step.featured {
-    border-color: rgba(255,207,43,.45);
-    background: linear-gradient(135deg, rgba(255,207,43,.1), rgba(74,163,255,.06));
+    border-color: var(--brick-blue);
+    background: linear-gradient(135deg, rgba(255,213,0,.25), rgba(0,85,191,.08));
   }
   .welcome-cta {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-    margin-top: 4px;
     position: relative;
     z-index: 35;
   }
@@ -108,21 +262,12 @@
     align-items: center;
     gap: 14px;
   }
-  .logo-mark {
-    width: 54px; height: 54px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, var(--brand), var(--brand-2));
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 4px;
-    padding: 9px;
-    box-shadow: var(--shadow);
-  }
-  .logo-mark span {
-    background: rgba(255,255,255,.9);
-    border-radius: 50%;
-    box-shadow: inset 0 -2px 3px rgba(0,0,0,.25);
+  .logo-icon {
+    width: 42px;
+    height: auto;
+    aspect-ratio: 141.568 / 181.85;
+    flex-shrink: 0;
+    filter: drop-shadow(0 3px 0 #1a1a1a);
   }
   .logo h1 {
     margin: 0;
@@ -136,21 +281,57 @@
     font-weight: 600;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--brand);
+    color: var(--brick-blue);
     margin-top: 3px;
   }
-  .tagline {
+  .logo h1 .brick-word { color: var(--brick-red); }
+  .topbar-aside {
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .tagline {
     color: var(--muted);
     font-size: 14px;
-    max-width: 360px;
+    max-width: 420px;
     text-align: right;
+    margin: 0;
+    line-height: 1.45;
   }
+  .tagline-phrase { white-space: nowrap; }
+  .theme-pick {
+    display: flex;
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .theme-pick button {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 7px 11px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s, color .15s;
+  }
+  .theme-pick button + button { border-left: 2px solid var(--line); }
+  .theme-pick button:hover { color: var(--text); }
+  .theme-pick button.active {
+    background: linear-gradient(180deg, var(--btn-top), var(--btn-bottom));
+    color: var(--btn-text);
+  }
+  .theme-pick button[aria-label] { font-size: 13px; }
 
   /* ---------- Panels ---------- */
   .panel {
-    background: linear-gradient(180deg, var(--panel-2), var(--panel));
-    border: 1px solid var(--line);
+    background: var(--panel);
+    border: 2px solid var(--line);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
   }
@@ -163,8 +344,8 @@
   .load-tabs {
     display: inline-flex;
     gap: 4px;
-    background: #0e1730;
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 2px solid var(--line);
     border-radius: 12px;
     padding: 4px;
     margin-bottom: 20px;
@@ -182,9 +363,9 @@
   }
   .load-tab:hover { color: var(--text); }
   .load-tab.active {
-    color: var(--text);
-    background: var(--panel-2);
-    box-shadow: 0 2px 10px rgba(0,0,0,.3);
+    color: var(--btn-text);
+    background: linear-gradient(180deg, var(--btn-top), var(--btn-bottom));
+    box-shadow: 0 2px 0 var(--line);
   }
   .load-pane { display: none; pointer-events: none; }
   .load-pane.active { display: block; pointer-events: auto; }
@@ -201,12 +382,12 @@
     margin-bottom: 18px;
   }
   .api-callout {
-    background: linear-gradient(135deg, rgba(255,207,43,.07), rgba(74,163,255,.05));
-    border: 1px solid rgba(255,207,43,.22);
+    background: linear-gradient(135deg, rgba(255,213,0,.22), rgba(0,85,191,.06));
+    border: 2px solid var(--line);
   }
   .import-callout {
-    background: linear-gradient(135deg, rgba(74,163,255,.07), rgba(56,211,159,.04));
-    border: 1px solid rgba(74,163,255,.2);
+    background: linear-gradient(135deg, rgba(0,85,191,.1), rgba(45,143,78,.06));
+    border: 2px solid var(--line);
   }
   .api-tags {
     display: flex;
@@ -219,13 +400,13 @@
     font-weight: 700;
     padding: 5px 11px;
     border-radius: 999px;
-    background: rgba(13,20,38,.75);
-    border: 1px solid var(--line);
+    background: var(--elevated);
+    border: 2px solid var(--line);
     color: var(--text);
   }
   .load-form {
-    background: #0e1730;
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 2px solid var(--line);
     border-radius: 14px;
     padding: 18px;
   }
@@ -273,8 +454,8 @@
   .tab-crosslink {
     margin: 14px 0 0;
     padding: 10px 14px;
-    background: rgba(74,163,255,.06);
-    border: 1px solid rgba(74,163,255,.15);
+    background: rgba(0,85,191,.08);
+    border: 2px solid var(--line);
     border-radius: 10px;
     font-size: 13.5px;
     color: var(--muted);
@@ -320,8 +501,8 @@
     margin-top: 18px;
   }
   .format-card {
-    background: #0e1730;
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 2px solid var(--line);
     border-radius: 12px;
     padding: 14px 16px;
     font-size: 13px;
@@ -335,7 +516,7 @@
   }
   .format-card code, .format-example {
     display: block;
-    background: #0d1426;
+    background: var(--surface-2);
     border: 1px solid var(--line);
     border-radius: 6px;
     padding: 6px 8px;
@@ -374,8 +555,8 @@
   }
   .field .hint { font-size: 11.5px; color: var(--muted); font-weight: 500; letter-spacing: 0; text-transform: none; }
   input[type="text"], input[type="password"], select {
-    background: #0d1426;
-    border: 1px solid var(--line);
+    background: var(--input-bg);
+    border: 2px solid var(--line);
     color: var(--text);
     padding: 12px 14px;
     border-radius: 11px;
@@ -385,31 +566,31 @@
   }
   input:focus, select:focus {
     border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgba(74,163,255,.2);
+    box-shadow: 0 0 0 3px rgba(0,85,191,.2);
   }
   #setNumber { width: 100%; font-weight: 700; letter-spacing: .5px; }
   #apiKey { width: 100%; }
 
   .btn {
-    border: none;
+    border: 2px solid var(--line);
     cursor: pointer;
     font-weight: 800;
     font-size: 15px;
     padding: 12px 20px;
     border-radius: 11px;
-    color: #11161f;
-    background: linear-gradient(135deg, var(--brand), #ffb800);
-    box-shadow: 0 6px 18px rgba(255,184,0,.28);
+    color: var(--btn-text);
+    background: linear-gradient(180deg, var(--btn-top), var(--btn-bottom));
+    box-shadow: 0 3px 0 var(--line);
     transition: transform .08s, filter .15s;
     letter-spacing: .3px;
   }
-  .btn:hover { filter: brightness(1.05); }
-  .btn:active { transform: translateY(1px); }
+  .btn:hover { filter: brightness(1.04); }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
   .btn.ghost {
-    background: transparent;
+    background: var(--elevated);
     color: var(--text);
-    border: 1px solid var(--line);
-    box-shadow: none;
+    border: 2px solid var(--line);
+    box-shadow: 0 3px 0 var(--line);
   }
   .btn.ghost:hover { border-color: var(--blue); color: var(--blue); }
   .btn.danger.ghost:hover { border-color: var(--red); color: var(--red); }
@@ -431,12 +612,12 @@
     text-transform: uppercase;
   }
   .pill.rec {
-    background: rgba(56,211,159,.18);
-    color: var(--green);
-    border: 1px solid rgba(56,211,159,.35);
+    background: rgba(45,143,78,.15);
+    color: var(--green-deep);
+    border: 2px solid var(--green);
   }
-  .pill.ok { background: rgba(56,211,159,.15); color: var(--green); }
-  .pill.off { background: rgba(154,169,199,.15); color: var(--muted); }
+  .pill.ok { background: rgba(45,143,78,.12); color: var(--green-deep); border: 2px solid var(--green); }
+  .pill.off { background: var(--surface); color: var(--muted); border: 2px solid var(--line); }
 
   /* ---------- Status / errors ---------- */
   .status {
@@ -447,8 +628,8 @@
     display: none;
   }
   .status.show { display: block; }
-  .status.err { background: rgba(232,68,59,.12); border: 1px solid rgba(232,68,59,.4); color: #ffb4ae; }
-  .status.info { background: rgba(74,163,255,.12); border: 1px solid rgba(74,163,255,.35); color: #bfe0ff; }
+  .status.err { background: rgba(217,16,16,.1); border: 2px solid var(--red); color: #8b0000; }
+  .status.info { background: rgba(0,85,191,.08); border: 2px solid var(--blue); color: #003d8f; }
 
   /* ---------- Set header ---------- */
   .set-head {
@@ -472,8 +653,8 @@
   .set-meta .sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
   .stat-chips { display: flex; gap: 10px; flex-wrap: wrap; }
   .chip {
-    background: #0e1730;
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 2px solid var(--line);
     border-radius: 12px;
     padding: 10px 14px;
     min-width: 92px;
@@ -500,10 +681,10 @@
   .progress-top .pct { font-size: 30px; font-weight: 900; color: var(--brand); }
   .bar {
     height: 18px;
-    background: #0c1430;
+    background: var(--surface-2);
     border-radius: 999px;
     overflow: hidden;
-    border: 1px solid var(--line);
+    border: 2px solid var(--line);
   }
   .bar > div {
     height: 100%;
@@ -511,7 +692,7 @@
     background: linear-gradient(90deg, var(--green-deep), var(--green));
     border-radius: 999px;
     transition: width .35s ease;
-    box-shadow: 0 0 14px rgba(56,211,159,.5);
+    box-shadow: 0 0 8px rgba(45,143,78,.35);
   }
 
   /* ---------- Toolbar ---------- */
@@ -526,8 +707,8 @@
   .toolbar input[type="text"] { width: 260px; }
   .seg {
     display: flex;
-    background: #0d1426;
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 2px solid var(--line);
     border-radius: 11px;
     overflow: hidden;
   }
@@ -547,8 +728,8 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    background: #0d1426;
-    border: 1px solid var(--line);
+    background: var(--input-bg);
+    border: 2px solid var(--line);
     border-radius: 11px;
     padding: 0 10px 0 12px;
     height: 44px;
@@ -556,7 +737,7 @@
   }
   .value-group:focus-within {
     border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgba(74,163,255,.2);
+    box-shadow: 0 0 0 3px rgba(0,85,191,.2);
   }
   .value-group .value-label { font-size: 12.5px; font-weight: 700; color: var(--muted); margin-right: 4px; white-space: nowrap; }
   .value-group .value-cur, .value-group .value-dash { color: var(--muted); font-weight: 700; }
@@ -593,8 +774,8 @@
     gap: 10px;
     align-items: center;
     flex-wrap: wrap;
-    background: linear-gradient(180deg, var(--panel-2), var(--panel));
-    border: 1px solid var(--blue);
+    background: var(--panel);
+    border: 2px solid var(--blue);
     border-radius: 14px;
     padding: 14px 16px;
     margin-bottom: 16px;
@@ -612,8 +793,8 @@
     gap: 14px;
   }
   .card {
-    background: linear-gradient(180deg, var(--panel-2), var(--panel));
-    border: 1px solid var(--line);
+    background: var(--panel);
+    border: 2px solid var(--line);
     border-radius: 14px;
     padding: 14px;
     display: flex;
@@ -622,10 +803,10 @@
     position: relative;
     transition: transform .12s, border-color .15s, box-shadow .15s;
   }
-  .card:hover { transform: translateY(-3px); border-color: #3a4d78; }
+  .card:hover { transform: translateY(-3px); border-color: var(--brick-blue); }
   .card.done {
     border-color: var(--green);
-    box-shadow: 0 0 0 1px var(--green), 0 10px 26px rgba(20,168,119,.25);
+    box-shadow: 0 0 0 2px var(--green), 0 6px 0 var(--line);
   }
   .card.done::after {
     content: "✓ FOUND";
@@ -665,7 +846,7 @@
   .swatch {
     width: 16px; height: 16px;
     border-radius: 5px;
-    border: 1px solid rgba(255,255,255,.25);
+    border: 2px solid var(--line);
     flex-shrink: 0;
   }
 
@@ -687,8 +868,8 @@
   .step {
     width: 40px; height: 40px;
     border-radius: 11px;
-    border: 1px solid var(--line);
-    background: #0e1730;
+    border: 2px solid var(--line);
+    background: var(--elevated);
     color: var(--text);
     font-size: 22px;
     font-weight: 800;
@@ -706,8 +887,8 @@
     width: 100%;
     padding: 9px;
     border-radius: 10px;
-    border: 1px solid var(--line);
-    background: #0e1730;
+    border: 2px solid var(--line);
+    background: var(--surface);
     color: var(--muted);
     cursor: pointer;
     font-weight: 800;
@@ -716,7 +897,7 @@
     transition: all .15s;
   }
   .mark-btn:hover { border-color: var(--green); color: var(--green); }
-  .card.done .mark-btn { background: rgba(56,211,159,.12); border-color: var(--green); color: var(--green); }
+  .card.done .mark-btn { background: rgba(45,143,78,.12); border-color: var(--green); color: var(--green-deep); }
   .card.minifig { border-color: rgba(146,57,120,.55); }
   .card.minifig::before {
     content: "MINIFIG";
@@ -775,7 +956,7 @@
   /* ---------- Loading skeleton ---------- */
   .spinner {
     width: 22px; height: 22px;
-    border: 3px solid rgba(255,255,255,.2);
+    border: 3px solid var(--spinner-track);
     border-top-color: var(--brand);
     border-radius: 50%;
     display: inline-block;
@@ -791,11 +972,11 @@
     top: 8px;
     z-index: 30;
     margin-bottom: 16px;
-    background: linear-gradient(180deg, rgba(29,41,74,.97), rgba(22,32,58,.97));
+    background: var(--hud-bg);
     backdrop-filter: blur(10px);
-    border: 1px solid var(--line);
+    border: 2px solid var(--line);
     border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    box-shadow: var(--shadow);
     overflow: hidden;
   }
   .sticky-hud.show { display: block; }
@@ -809,7 +990,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(145deg, #fff 0%, #e8ecf4 100%);
+    background: var(--hud-set-bg);
     border-right: 1px solid var(--line);
     padding: 12px 16px;
     min-width: 172px;
@@ -867,8 +1048,8 @@
     flex-direction: column;
     justify-content: center;
     gap: 3px;
-    background: #0e1730;
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 2px solid var(--line);
     border-radius: 12px;
     padding: 10px 14px;
     min-width: 88px;
@@ -918,15 +1099,15 @@
     min-width: 96px;
     padding: 10px 14px;
     border-radius: 12px;
-    border: 2px solid rgba(255,90,60,.55);
-    background: linear-gradient(180deg, rgba(255,90,60,.18), rgba(255,90,60,.06));
+    border: 2px solid var(--brand-2);
+    background: linear-gradient(180deg, rgba(217,16,16,.15), rgba(217,16,16,.05));
     color: var(--text);
     cursor: pointer;
     font-family: inherit;
     transition: transform .08s, border-color .15s, background .15s;
     flex-shrink: 0;
   }
-  .hud-drop:hover { border-color: var(--brand-2); background: rgba(255,90,60,.22); }
+  .hud-drop:hover { border-color: var(--brand-2); background: rgba(217,16,16,.2); }
   .hud-drop:active { transform: scale(.94); }
   .hud-drop.bump { animation: dropBump .35s ease; }
   @keyframes dropBump {
@@ -958,15 +1139,15 @@
     min-width: 88px;
     padding: 10px 14px;
     border-radius: 12px;
-    border: 2px solid rgba(74,163,255,.5);
-    background: linear-gradient(180deg, rgba(74,163,255,.2), rgba(74,163,255,.06));
+    border: 2px solid var(--blue);
+    background: linear-gradient(180deg, rgba(0,85,191,.15), rgba(0,85,191,.05));
     color: var(--text);
     cursor: pointer;
     font-family: inherit;
     transition: transform .08s, border-color .15s, background .15s;
     flex-shrink: 0;
   }
-  .hud-pause:hover { border-color: var(--blue); background: rgba(74,163,255,.28); }
+  .hud-pause:hover { border-color: var(--blue); background: rgba(0,85,191,.2); }
   .hud-pause:active { transform: scale(.94); }
   .hud-pause .pause-ico { font-size: 24px; line-height: 1; }
   .hud-pause .pause-lbl {
@@ -988,12 +1169,12 @@
     text-transform: lowercase;
     letter-spacing: 0;
   }
-  .hud-bar { height: 8px; background: #0c1430; }
+  .hud-bar { height: 8px; background: var(--surface-2); }
   .hud-bar > div {
     height: 100%; width: 0%;
     background: linear-gradient(90deg, var(--green-deep), var(--green));
     transition: width .35s ease;
-    box-shadow: 0 0 10px rgba(56,211,159,.5);
+    box-shadow: 0 0 8px rgba(45,143,78,.35);
   }
   @media (max-width: 720px) {
     .hud-inner { flex-wrap: wrap; }
@@ -1081,8 +1262,8 @@
     gap: 20px;
   }
   .footer-bbb {
-    background: linear-gradient(135deg, rgba(99,102,241,.1), rgba(6,182,212,.06));
-    border: 1px solid var(--line);
+    background: linear-gradient(135deg, rgba(255,213,0,.2), rgba(0,85,191,.08));
+    border: 2px solid var(--line);
     border-radius: 14px;
     padding: 20px 22px;
     line-height: 1.6;
@@ -1099,6 +1280,66 @@
     font-size: 12px;
     line-height: 1.5;
   }
+  .footer-data {
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 0 16px;
+  }
+  .footer-data summary {
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--muted);
+    padding: 14px 4px;
+    list-style: none;
+    user-select: none;
+  }
+  .footer-data summary::-webkit-details-marker { display: none; }
+  .footer-data summary::before { content: "▸ "; }
+  .footer-data[open] summary::before { content: "▾ "; }
+  .footer-data[open] summary { color: var(--text); }
+  .footer-data-body {
+    padding: 0 4px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .footer-data-body > p { margin: 0 0 12px; }
+  .data-summary {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: var(--elevated);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .data-summary-empty { font-style: italic; }
+  .data-set-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .data-set-row:last-child { border-bottom: none; }
+  .data-set-row b { color: var(--text); font-weight: 700; }
+  .data-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .data-actions .btn { font-size: 13px; padding: 8px 14px; }
+  .data-msg {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    min-height: 1.2em;
+  }
+  .data-msg.ok { color: var(--green-deep); }
+  .data-msg.err { color: var(--red); }
 
   /* ---------- Import (inside load tab) ---------- */
   .import-intro b { color: var(--text); }
@@ -1111,20 +1352,34 @@
     padding: 14px; min-height: 50px; color: var(--muted); font-size: 13.5px;
     cursor: pointer; transition: border-color .15s, color .15s, background .15s;
   }
-  .file-drop:hover, .file-drop.drag { border-color: var(--blue); color: var(--blue); background: rgba(74,163,255,.06); }
+  .file-drop:hover, .file-drop.drag { border-color: var(--blue); color: var(--blue); background: rgba(0,85,191,.08); }
   textarea#importText {
     width: 100%; resize: vertical; min-height: 120px;
-    background: #0d1426; border: 1px solid var(--line); color: var(--text);
+    background: var(--input-bg); border: 2px solid var(--line); color: var(--text);
     border-radius: 11px; padding: 12px 14px; font-size: 13.5px;
     font-family: "Consolas", "SF Mono", ui-monospace, monospace; line-height: 1.5; outline: none;
   }
-  textarea#importText:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(74,163,255,.2); }
+  textarea#importText:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,85,191,.2); }
   .import-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
   .import-msg { font-size: 13.5px; font-weight: 600; }
-  .import-msg.err { color: #ff8a80; }
+  .import-msg.err { color: var(--red); }
   .import-msg.ok { color: var(--green); }
+  @media (max-width: 720px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+      padding: 20px 20px 16px;
+      text-align: center;
+    }
+    .hero-art { order: -1; }
+    .hero-art-frame { max-width: 220px; margin: 0 auto; }
+    .hero-lead, .hero-sub { max-width: none; margin-left: auto; margin-right: auto; }
+    .welcome-cta { justify-content: center; }
+    .hero-perks { padding: 0 20px 18px; justify-content: center; }
+    .welcome-steps { padding: 18px 20px 22px; }
+  }
   @media (max-width: 600px) {
     .tagline { display: none; }
+    .topbar-aside { margin-left: 0; width: 100%; justify-content: flex-end; }
     #setNumber, #apiKey, .toolbar input[type="text"] { width: 100%; }
     .field { flex: 1; }
     .import-grid { grid-template-columns: 1fr; }
@@ -1151,27 +1406,58 @@
 <div class="wrap">
   <header class="topbar">
     <div class="logo">
-      <div class="logo-mark"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-      <h1>Project Excavation <small>Free LEGO set sorting tracker</small></h1>
+      <img src="logo-e.svg" alt="" class="logo-icon" width="142" height="182" />
+      <h1><span class="brick-word">Brick</span> Excavation <small>Free LEGO set sorting tracker</small></h1>
     </div>
-    <div class="tagline">Dig every brick out of the pile. Track progress. Stream-friendly.</div>
+    <div class="topbar-aside">
+      <p class="tagline"><span class="tagline-phrase">Dig every brick out of the pile.</span> <span class="tagline-phrase">Track progress.</span> <span class="tagline-phrase">Stream-friendly.</span></p>
+      <div class="theme-pick" role="group" aria-label="Colour theme">
+        <button type="button" data-theme-pick="light" class="active" title="Light theme" aria-label="Light theme">☀</button>
+        <button type="button" data-theme-pick="dark" title="Dark theme" aria-label="Dark theme">☽</button>
+        <button type="button" data-theme-pick="auto" title="Match system" aria-label="Match system theme">◐</button>
+      </div>
+    </div>
   </header>
 
-  <section class="panel welcome">
-    <h2>Rebuilding a set from a mixed brick pile?</h2>
-    <p>
-      Pick how you want to load your parts list — <b>by set number</b> (best photos &amp; colours) or <b>import a CSV / paste from BrickLink</b>.
-      Then tick off each piece as you find it. No account — progress saves in your browser.
-    </p>
-    <div class="welcome-cta">
-      <button type="button" class="btn" id="welcomeLoad">🔍 Load by set number</button>
-      <button type="button" class="btn ghost" id="welcomeImport">📋 Import a list</button>
-      <button type="button" class="btn ghost" id="welcomeDemo">▶ Try Radon Rover demo</button>
+  <section class="panel welcome" id="hero">
+    <div class="hero-inner">
+      <div class="hero-art">
+        <div class="hero-art-frame">
+          <img src="g15896.svg" alt="Cartoon kid excavating LEGO bricks from a pile" class="hero-img" width="274" height="295" />
+        </div>
+      </div>
+      <div class="hero-copy">
+        <p class="hero-eyebrow">Free · no account · saves in your browser</p>
+        <h2 class="hero-title">You've got the pile.<br>We've got the <span class="word-red">checklist</span>.</h2>
+        <p class="hero-lead">
+          Mixed tub? Thrift-store haul? That set you swore you'd rebuild someday?
+          <strong>Brick Excavation</strong> turns the chaos into a treasure hunt — one part card at a time.
+        </p>
+        <p class="hero-sub">
+          Type a set number and Rebrickable loads real photos, colours, and minifigs.
+          Or paste a BrickLink list — no API key required.
+          Then tick off every brick as you dig it out of the pile. Every <b>+</b> is a tiny victory.
+        </p>
+        <div class="welcome-cta">
+          <button type="button" class="btn" id="welcomeLoad">🔍 Load by set number</button>
+          <button type="button" class="btn ghost" id="welcomeImport">📋 Import a list</button>
+          <button type="button" class="btn ghost" id="welcomeDemo">▶ Try demo</button>
+        </div>
+      </div>
+    </div>
+    <div class="hero-perks" aria-label="Features">
+      <span class="hero-perk">📸 Real part photos</span>
+      <span class="hero-perk">🎨 Colour swatches</span>
+      <span class="hero-perk">🧍 Minifig part-out</span>
+      <span class="hero-perk">📊 Live progress bar</span>
+      <span class="hero-perk">💰 Used-value tracker</span>
+      <span class="hero-perk">🧱 Drop counter</span>
+      <span class="hero-perk">📺 Stream-friendly HUD</span>
     </div>
     <div class="welcome-steps">
-      <div class="welcome-step"><b>1 · Choose your path</b>Rebrickable API for photos &amp; minifigs, or paste/upload a list — you only need one.</div>
-      <div class="welcome-step"><b>2 · Dig &amp; tick</b>Each card is one part type. Hit + every time you fish one out of the pile.</div>
-      <div class="welcome-step"><b>3 · Watch the bar move</b>Progress, pace, value, and drop counter stay pinned while you scroll.</div>
+      <div class="welcome-step featured"><b>1 · Load your quarry</b>Type a set number for the full Rebrickable experience, or import a CSV / BrickLink paste. Pick one path — you're good.</div>
+      <div class="welcome-step"><b>2 · Excavate &amp; tick</b>Each card is one part type with a photo. Hit + every time you fish a piece out of the rubble.</div>
+      <div class="welcome-step"><b>3 · Watch the bar climb</b>Progress, pace, value, and your biggest remaining pile stay pinned up top while you scroll.</div>
     </div>
   </section>
 
@@ -1309,7 +1595,7 @@ sw0001,Luke Skywalker,1,Minifigures</code>
         <input type="checkbox" id="partOutMinifigs" checked />
         <span>Part out minifigs <span class="hint">Show head, torso, legs &amp; accessories separately</span></span>
       </label>
-      <button type="button" class="btn ghost" id="demoBtn">▶ Try Radon Rover demo</button>
+      <button type="button" class="btn ghost" id="demoBtn">▶ Try demo</button>
       <p class="setup-footer-note">Set 6829-1 — real parts list with BrickLink photos. No key or import needed.</p>
     </div>
   </section>
@@ -1449,7 +1735,7 @@ sw0001,Luke Skywalker,1,Minifigures</code>
       <h3>Presented by Build Beyond Belief</h3>
       <p>
         I build free, practical tools so useful ideas become working things — then teach people how to do the same with AI.
-        Project Excavation is a sister project to
+        Brick Excavation is a sister project to
         <a href="https://chrysalis.buildbeyondbelief.com" target="_blank" rel="noopener">Project Chrysalis</a>
         (a free personal digital security audit). Same spirit: no account, no fluff, just something that helps this weekend.
       </p>
@@ -1464,8 +1750,24 @@ sw0001,Luke Skywalker,1,Minifigures</code>
         <a href="https://buildbeyondbelief.com/blueprint" target="_blank" rel="noopener">The Builder's Blueprint</a>
       </p>
     </div>
+    <details class="footer-data" id="footerData">
+      <summary>Your saved data — export / import</summary>
+      <div class="footer-data-body">
+        <p>
+          Progress, drop counts, used-value ranges, and manual parts are stored in <b>this browser only</b>.
+          Export a JSON backup to inspect everything or move it to another device. Import merges into what you already have here.
+        </p>
+        <div class="data-summary" id="dataSummary" aria-live="polite"></div>
+        <div class="data-actions">
+          <button type="button" class="btn ghost" id="exportDataBtn">⬇ Export data</button>
+          <button type="button" class="btn ghost" id="importDataBtn">⬆ Import data</button>
+          <input type="file" id="importDataFile" accept=".json,application/json" hidden />
+        </div>
+        <p class="data-msg" id="dataMsg"></p>
+      </div>
+    </details>
     <div class="footer-legal">
-      Project Excavation is an independent fan tool, not affiliated with the LEGO Group.
+      Brick Excavation is an independent fan tool, not affiliated with the LEGO Group.
       LEGO® is a trademark of the LEGO Group. Part data may come from Rebrickable, BrickLink, Brickset, or your own import.
       Nothing is uploaded — your progress stays in this browser.
     </div>
@@ -1491,7 +1793,193 @@ sw0001,Luke Skywalker,1,Minifigures</code>
   };
 
   const API = "https://rebrickable.com/api/v3/lego";
+  const KEY_STORE = "brickhunt_apikey";
   const PART_OUT_KEY = "excavation_part_out_minifigs";
+  const THEME_KEY = "excavation_theme";
+  const DATA_EXPORT_VERSION = 1;
+
+  function isAppStorageKey(key) {
+    return key === PART_OUT_KEY || key === KEY_STORE || key === THEME_KEY || key.indexOf("brickhunt_") === 0;
+  }
+
+  function resolveTheme(pref) {
+    if (pref === "dark") return "dark";
+    if (pref === "light") return "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+
+  function applyTheme(pref) {
+    pref = pref || localStorage.getItem(THEME_KEY) || "light";
+    if (pref !== "light" && pref !== "dark" && pref !== "auto") pref = "light";
+    const resolved = resolveTheme(pref);
+    document.documentElement.dataset.themePref = pref;
+    if (resolved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    else document.documentElement.removeAttribute("data-theme");
+    document.querySelectorAll("[data-theme-pick]").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.themePick === pref);
+    });
+  }
+
+  function setTheme(pref) {
+    localStorage.setItem(THEME_KEY, pref);
+    applyTheme(pref);
+  }
+
+  function collectAppStorage() {
+    const storage = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && isAppStorageKey(key)) storage[key] = localStorage.getItem(key);
+    }
+    return storage;
+  }
+
+  function listSetsWithProgress() {
+    const sets = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      const m = key && key.match(/^brickhunt_progress_(.+)$/);
+      if (!m) continue;
+      const setNum = m[1];
+      let parts = 0;
+      let found = 0;
+      let ticked = 0;
+      try {
+        const prog = JSON.parse(localStorage.getItem(key) || "{}");
+        Object.keys(prog).forEach((k) => {
+          parts++;
+          const n = prog[k];
+          if (typeof n === "number" && n > 0) {
+            ticked++;
+            found += n;
+          }
+        });
+      } catch (e) { /* skip */ }
+      const drops = loadDrops(setNum);
+      const val = loadValue(setNum);
+      const manual = loadManual(setNum).length;
+      sets.push({ setNum, parts, ticked, found, drops, val, manual });
+    }
+    sets.sort((a, b) => a.setNum.localeCompare(b.setNum, undefined, { numeric: true }));
+    return sets;
+  }
+
+  function updateDataSummary() {
+    const el = $("dataSummary");
+    if (!el) return;
+    const sets = listSetsWithProgress();
+    const hasKey = !!localStorage.getItem(KEY_STORE);
+    const partOut = localStorage.getItem(PART_OUT_KEY) !== "0";
+    const themePref = localStorage.getItem(THEME_KEY) || "light";
+    if (!sets.length && !hasKey) {
+      el.innerHTML = '<span class="data-summary-empty">No saved hunts yet — load a set and start ticking.</span>';
+      return;
+    }
+    let html = "";
+    if (sets.length) {
+      html += sets.map((s) => {
+        const extra = [
+          s.ticked + "/" + s.parts + " part types ticked",
+          s.found + " pieces found",
+          s.drops ? s.drops + " drops" : "",
+          s.manual ? s.manual + " manual parts" : "",
+          (s.val.low || s.val.high) ? "$" + (s.val.low || 0) + "–$" + (s.val.high || 0) + " used value" : "",
+        ].filter(Boolean).join(" · ");
+        return '<div class="data-set-row"><b>' + esc(s.setNum) + "</b><span>" + esc(extra) + "</span></div>";
+      }).join("");
+    } else {
+      html = '<span class="data-summary-empty">No set progress saved yet.</span>';
+    }
+    const prefs = [];
+    if (hasKey) prefs.push("API key saved");
+    prefs.push(partOut ? "minifig part-out on" : "minifig part-out off");
+    prefs.push(themePref + " theme");
+    html += '<div class="data-set-row" style="margin-top:8px;border-top:2px solid var(--line);padding-top:8px"><b>Preferences</b><span>' + esc(prefs.join(" · ")) + "</span></div>";
+    el.innerHTML = html;
+  }
+
+  function showDataMsg(text, type) {
+    const el = $("dataMsg");
+    if (!el) return;
+    el.textContent = text || "";
+    el.className = "data-msg" + (type ? " " + type : "");
+  }
+
+  function exportAllData() {
+    const storage = collectAppStorage();
+    const payload = {
+      version: DATA_EXPORT_VERSION,
+      app: "brick-excavation",
+      exportedAt: new Date().toISOString(),
+      storage: storage,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "brick-excavation-data-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+    showDataMsg("Exported " + Object.keys(storage).length + " stored items.", "ok");
+  }
+
+  function parseDataBackup(raw) {
+    let data;
+    try { data = typeof raw === "string" ? JSON.parse(raw) : raw; }
+    catch (e) { throw new Error("That file isn't valid JSON."); }
+    const storage = data && data.storage;
+    if (!storage || typeof storage !== "object") throw new Error("Unrecognised backup format — need a storage object.");
+    const keys = Object.keys(storage).filter(isAppStorageKey);
+    if (!keys.length) throw new Error("No Brick Excavation data found in that file.");
+    const filtered = {};
+    const setIds = new Set();
+    keys.forEach((key) => {
+      filtered[key] = storage[key];
+      const m = key.match(/^brickhunt_progress_(.+)$/);
+      if (m) setIds.add(m[1]);
+    });
+    return { count: keys.length, storage: filtered, setIds: [...setIds].sort() };
+  }
+
+  function applyDataBackup(storage) {
+    Object.keys(storage).forEach((key) => {
+      const val = storage[key];
+      if (val == null) localStorage.removeItem(key);
+      else localStorage.setItem(key, String(val));
+    });
+  }
+
+  function refreshCurrentSetFromStorage() {
+    if (!state.setNum) return;
+    const core = state.parts.filter((p) => !p.manual);
+    const manual = loadManual(state.setNum).map((m) => ({
+      key: "manual|" + m.name + "|" + (m.colorName || "Custom"),
+      name: m.name, partNum: m.partNum || "—", colorName: m.colorName || "Custom",
+      colorHex: m.colorHex || colorHexFromName(m.colorName) || "#9aa9c7",
+      imgUrl: m.imgUrl || null, imgFallbacks: [], need: m.need || 1, found: 0, manual: true,
+    }));
+    state.parts = core.concat(manual);
+    const saved = loadProgress(state.setNum);
+    state.parts.forEach((p) => {
+      if (typeof saved[p.key] === "number") p.found = Math.min(saved[p.key], p.need);
+    });
+    state.value = loadValue(state.setNum);
+    els.valueLow.value = state.value.low || "";
+    els.valueHigh.value = state.value.high || "";
+    state.drops = loadDrops(state.setNum);
+    updateDropsHud();
+    wasComplete = totals().total > 0 && totals().found === totals().total;
+    render();
+  }
+
+  function refreshPrefsFromStorage() {
+    loadKey();
+    updateKeyPill();
+    applyTheme();
+    state.partOutMinifigs = localStorage.getItem(PART_OUT_KEY) !== "0";
+    if (els.partOutMinifigs) els.partOutMinifigs.checked = state.partOutMinifigs;
+  }
 
   // ---------- Elements ----------
   const $ = (id) => document.getElementById(id);
@@ -1520,7 +2008,6 @@ sw0001,Luke Skywalker,1,Minifigures</code>
   };
 
   // ---------- API key persistence ----------
-  const KEY_STORE = "brickhunt_apikey";
   function loadKey() {
     const k = localStorage.getItem(KEY_STORE) || "";
     els.apiKey.value = k;
@@ -1935,7 +2422,7 @@ sw0001,Luke Skywalker,1,Minifigures</code>
   async function loadDemo() {
     let parts = buildPartsFromRows(parseBrickLink(RADON_ROVER_IMPORT));
     if (!parts.length) {
-      showStatus("Couldn't load the Radon Rover demo.", "err");
+      showStatus("Couldn't load the demo.", "err");
       return;
     }
     syncPartOutPref();
@@ -2908,6 +3395,50 @@ sw0001,Luke Skywalker,1,Minifigures</code>
   els.apClose.addEventListener("click", () => els.addPartPanel.classList.remove("show"));
   [els.apName, els.apColor, els.apImg, els.apQty].forEach((el) =>
     el.addEventListener("keydown", (e) => { if (e.key === "Enter") addManualPart(); }));
+
+  // ---------- Data export / import ----------
+  const footerData = $("footerData");
+  if (footerData) {
+    footerData.addEventListener("toggle", () => {
+      if (footerData.open) updateDataSummary();
+    });
+  }
+  $("exportDataBtn").addEventListener("click", exportAllData);
+  $("importDataBtn").addEventListener("click", () => $("importDataFile").click());
+  $("importDataFile").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = parseDataBackup(reader.result);
+        let msg = "Import " + parsed.count + " stored items";
+        if (parsed.setIds.length) msg += " for " + parsed.setIds.length + " set" + (parsed.setIds.length > 1 ? "s" : "") + " (" + parsed.setIds.join(", ") + ")";
+        msg += "? This merges with your data here and overwrites matching keys.";
+        if (!confirm(msg)) return;
+        applyDataBackup(parsed.storage);
+        refreshPrefsFromStorage();
+        refreshCurrentSetFromStorage();
+        updateDataSummary();
+        showDataMsg("Imported " + parsed.count + " items.", "ok");
+      } catch (err) {
+        showDataMsg(err.message || "Import failed.", "err");
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // ---------- Theme ----------
+  document.querySelectorAll("[data-theme-pick]").forEach((btn) => {
+    btn.addEventListener("click", () => setTheme(btn.dataset.themePick));
+  });
+  if (window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+      if ((localStorage.getItem(THEME_KEY) || "light") === "auto") applyTheme("auto");
+    });
+  }
+  applyTheme();
 
   // ---------- Init ----------
   loadKey();
